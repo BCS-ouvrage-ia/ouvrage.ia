@@ -55,7 +55,7 @@ XANO_API_ENDPOINT_SEND_FILE = 'https://x8ki-letl-twmt.n7.xano.io/api:k69uEWXD/up
 # XANO_API_KEY = 'votre_cle_api_xano'
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-@app.route('/webhook-test/creer-nouveau-utilisateur', methods=['POST'])
+@app.route('/webhook/creer-nouveau-utilisateur', methods=['POST'])
 def creer_nouveau_utilisateur():
     data = request.get_json()
 
@@ -108,7 +108,7 @@ def creer_nouveau_utilisateur():
 
 
 
-@app.route('/webhook-test/enregistrer-memoire-technique', methods=['POST'])
+@app.route('/webhook/enregistrer-memoire-technique', methods=['POST'])
 def enregistrer_memoire_technique():
     # Vérifie si le fichier est présent dans la requête
     if 'file' not in request.files:
@@ -168,7 +168,7 @@ def enregistrer_memoire_technique():
 
 
 
-@app.route('/webhook-test/generer_memoire_technique', methods=['POST'])
+@app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
     # Vérifie si le fichier est présent dans la requête
     if 'file' not in request.files:
@@ -235,13 +235,10 @@ def generer_memoire_technique():
 
             # Récupérer ou créer le thread_id
             thread_id = get_thread_id(nom_entreprise, THREAD_ID_FILE)
-            print("Etape get thread_id")
             if not thread_id:
                 # Si aucun thread_id n'existe pour cette entreprise, en créer un nouveau
                 thread_id = create_thread()
                 save_thread_id(nom_entreprise, thread_id, THREAD_ID_FILE)
-
-            print("étape post thread_id")
 
                 # Dictionnaire pour stocker les réponses
             assistant_responses = {}
@@ -254,25 +251,16 @@ def generer_memoire_technique():
                 'nom_entreprise': nom_entreprise
             }
 
-            print("étape post variables")
-
-
             # Exécution des prompts successifs
             for key, prompt in prompts.items():
                 # Remplacement des placeholders dans le prompt
                 formatted_prompt = prompt.format(**variables)
 
-                print(f"Formatted_prompt : {formatted_prompt}")
-
                 # Interaction avec l'Assistant API
                 response = run_assistant_interaction(ASSISTANT_ID, formatted_prompt, thread_id)
 
-                print(f"etape post run assistant. Response : {response}")
-
                 # Stockage de la réponse
                 assistant_responses[key] = response
-
-                print("etape post stockage responses")
 
                 if key == 'moyens_humains':
                     generer_organigramme(response)
@@ -281,11 +269,7 @@ def generer_memoire_technique():
                 # Mise à jour des variables si nécessaire
                 if key in ['nom_projet', 'infos_dossier_consultation', 'requis_dossier_consultation']:
                     variables[key] = response
-                    print(f"Variable key : {variables[key]}")
 
-            print("étape après boucle if")
-
-                # Chemin du template
             template_path = 'template_memoire_technique.pdf'
 
             # Chemin de sortie du PDF final
@@ -307,8 +291,6 @@ def generer_memoire_technique():
                 'email': user_dict.get('email', 'xxxx@xxxxxx.fr')
             })
 
-            print("étape après variables")
-
             # Séquence qui créer un fichier temp :
 
             # Lire le fichier JSON source
@@ -317,8 +299,6 @@ def generer_memoire_technique():
 
             # Faire une copie profonde (deep copy) des données
             positions_data_temp = copy.deepcopy(positions_data)
-
-            print("étape après copy")
 
             # Les modifications que tu souhaites faire sur positions_data_temp
             for item in positions_data_temp:
@@ -332,8 +312,6 @@ def generer_memoire_technique():
                 else:
                     # Si le texte n'est pas une variable, on le laisse tel quel
                     pass
-            
-            print("étape après boucle for")
 
             # Écrire les données modifiées dans un nouveau fichier temporaire
             with open('positions_data_temp.json', 'w') as f:
@@ -342,8 +320,6 @@ def generer_memoire_technique():
 
             # Générer le PDF
             generate_pdf(template_path, output_pdf_path, positions_data_temp, variables, memoire_file_path)
-
-            print("étape post generate_pdf")
             
             #commenté pour test
             if os.path.exists('positions_data_temp.json'):
