@@ -24,6 +24,8 @@ def get_user_data_from_xano(nom_entreprise):
     print(nom_entreprise)
     try:
         response = requests.get(XANO_GET_USER_ENDPOINT, params=params)
+        #response.raise_for_status()
+        print(response)
         if response.status_code == 200:
         # Décoder la réponse JSON
             return response.json()
@@ -37,7 +39,10 @@ def get_thread_id(nom_entreprise, filename):
             thread_ids = json.load(f)
     else:
         thread_ids = {}
+    print("milieu get thread_id")
+
     thread_id = thread_ids.get(nom_entreprise)
+    print("fin_get_thread_id")
     return thread_id
 
 
@@ -55,6 +60,7 @@ def save_thread_id(nom_entreprise, thread_id, filename):
 
 
 def reset_file(filename):
+        # Dictionnaire vide
     empty_dict = {}
 
     # Réinitialiser le fichier avec un dictionnaire vide
@@ -64,6 +70,7 @@ def reset_file(filename):
 
 # Fonction pour remplacer \n par \u000A dans chaque text du JSON
 def replace_newlines_in_text(data):
+    # Parcourir chaque dictionnaire dans la liste
     for item in data:
         if "text" in item:
             # Remplacer \n par \u000A dans chaque texte

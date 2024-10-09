@@ -4,6 +4,8 @@ import os
 import copy
 import openai
 import json
+# Si local
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from utils import (
     allowed_file, 
@@ -22,7 +24,10 @@ from openai_api import (
 from prompts import prompts, prompts_dossier
 from pdf_generator import generate_pdf
 from organigramme import generer_organigramme
+from import_img import supprimer_images
 
+# Si local
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -48,7 +53,7 @@ XANO_API_ENDPOINT_SEND_FILE = 'https://x8ki-letl-twmt.n7.xano.io/api:k69uEWXD/up
 
 # Clés API
 # XANO_API_KEY = 'votre_cle_api_xano'
-openai.api_key = "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"
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 @app.route('/webhook-test/creer-nouveau-utilisateur', methods=['POST'])
 def creer_nouveau_utilisateur():
@@ -230,11 +235,15 @@ def generer_memoire_technique():
 
             # Récupérer ou créer le thread_id
             thread_id = get_thread_id(nom_entreprise, THREAD_ID_FILE)
+            print("Etape get thread_id")
             if not thread_id:
                 # Si aucun thread_id n'existe pour cette entreprise, en créer un nouveau
                 thread_id = create_thread()
                 save_thread_id(nom_entreprise, thread_id, THREAD_ID_FILE)
 
+            print("étape post thread_id")
+
+                # Dictionnaire pour stocker les réponses
             assistant_responses = {}
 
             # Variables pour remplacer les placeholders
@@ -245,24 +254,38 @@ def generer_memoire_technique():
                 'nom_entreprise': nom_entreprise
             }
 
+            print("étape post variables")
+
+
             # Exécution des prompts successifs
             for key, prompt in prompts.items():
                 # Remplacement des placeholders dans le prompt
                 formatted_prompt = prompt.format(**variables)
 
+                print(f"Formatted_prompt : {formatted_prompt}")
+
                 # Interaction avec l'Assistant API
                 response = run_assistant_interaction(ASSISTANT_ID, formatted_prompt, thread_id)
+
+                print(f"etape post run assistant. Response : {response}")
 
                 # Stockage de la réponse
                 assistant_responses[key] = response
 
+                print("etape post stockage responses")
+
                 if key == 'moyens_humains':
                     generer_organigramme(response)
+                    print("étape generer organigramme")
 
                 # Mise à jour des variables si nécessaire
                 if key in ['nom_projet', 'infos_dossier_consultation', 'requis_dossier_consultation']:
                     variables[key] = response
+                    print(f"Variable key : {variables[key]}")
 
+            print("étape après boucle if")
+
+                # Chemin du template
             template_path = 'template_memoire_technique.pdf'
 
             # Chemin de sortie du PDF final
@@ -284,6 +307,8 @@ def generer_memoire_technique():
                 'email': user_dict.get('email', 'xxxx@xxxxxx.fr')
             })
 
+            print("étape après variables")
+
             # Séquence qui créer un fichier temp :
 
             # Lire le fichier JSON source
@@ -292,6 +317,8 @@ def generer_memoire_technique():
 
             # Faire une copie profonde (deep copy) des données
             positions_data_temp = copy.deepcopy(positions_data)
+
+            print("étape après copy")
 
             # Les modifications que tu souhaites faire sur positions_data_temp
             for item in positions_data_temp:
@@ -306,36 +333,19 @@ def generer_memoire_technique():
                     # Si le texte n'est pas une variable, on le laisse tel quel
                     pass
             
+            print("étape après boucle for")
+
             # Écrire les données modifiées dans un nouveau fichier temporaire
             with open('positions_data_temp.json', 'w') as f:
                 json.dump(positions_data_temp, f, indent=4)
 
 
-            # Séquence qui modifie directement le fichier positions_data.json :
-            """ 
-            # Mettre à jour les données de positions avec les textes appropriés
-            for item in positions_data:
-                text_key = item.get('text')
-
-                # Remplacer le texte par la donnée appropriée
-                if text_key in variables:
-                    item['text'] = variables[text_key]
-                elif text_key in assistant_responses:
-                    item['text'] = assistant_responses[text_key]
-                # elif text_key.startswith("Nom "):
-                #    num = text_key.split(" ")[1]
-                #    item['text'] = user_data.get(f'nom_{num}', f'Nom {num}')
-                # elif text_key.startswith("Poste "):
-                #    num = text_key.split(" ")[1]
-                #    item['text'] = user_data.get(f'poste_{num}', f'Poste {num}')
-                else:
-                    # Si le texte n'est pas une variable, on le laisse tel quel
-                    pass
-            """
-
             # Générer le PDF
-            generate_pdf(template_path, output_pdf_path, positions_data_temp, variables)
+            generate_pdf(template_path, output_pdf_path, positions_data_temp, variables, memoire_file_path)
+
+            print("étape post generate_pdf")
             
+            #commenté pour test
             if os.path.exists('positions_data_temp.json'):
                 os.remove('positions_data_temp.json')
             
@@ -344,6 +354,10 @@ def generer_memoire_technique():
 
             reset_file(THREAD_ID_FILE)
             reset_file(THREAD_ID_ANALYSE_DOSSIER_FILE)
+
+            image_folder = 'images-memoire-technique-temp'
+            supprimer_images(image_folder)
+
 
             return send_file(output_pdf_path, as_attachment=True, mimetype='application/pdf')
 
@@ -367,4 +381,4 @@ def generer_memoire_technique():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=5000, debug=True)

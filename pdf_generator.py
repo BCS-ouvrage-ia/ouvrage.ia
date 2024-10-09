@@ -4,10 +4,15 @@ import re
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.colors import HexColor
+from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
 from pdfrw import PdfReader, PdfWriter, PageMerge
 import textwrap
 import os
+from PIL import Image
 from utils import replace_newlines_in_text
+from import_img import extraire_images, traiter_images
+
 
 # Fonction pour découper le texte en lignes qui tiennent dans la largeur spécifiée
 def wrap_text(c, text, width):
@@ -37,7 +42,6 @@ def wrap_text(c, text, width):
     return wrapped_lines
 
 
-# Fonction pour tronquer les lignes selon une hauteur maximale
 def max_height(wrapped_lines, line_height, max_paragraph_height):
     """
     Tronque les lignes pour qu'elles ne dépassent pas la hauteur maximale spécifiée,
@@ -88,10 +92,12 @@ def remove_reference_pattern(text):
     return text
 
 
-def generate_pdf(template_path, output_path, positions_data, variables):
+def generate_pdf(template_path, output_path, positions_data, variables, memoire_file_path):
 
         # Remplacer les \n par \u000A dans les textes de positions_data
     positions_data = replace_newlines_in_text(positions_data)
+
+    print(positions_data)
 
     # Lire le template PDF pour obtenir le nombre de pages
     template_pdf = PdfReader(template_path)
@@ -104,6 +110,10 @@ def generate_pdf(template_path, output_path, positions_data, variables):
     # Obtenir la hauteur de la page
     page_width, page_height = A4
 
+    print("étape 1 generate_pdf")
+    #print(type(positions_data))
+    #print(positions_data)
+
     # Créer un mapping des numéros de pages aux éléments à dessiner
     pages_content = {}  # clé : numéro de page, valeur : liste d'éléments
     for item in positions_data:
@@ -111,6 +121,16 @@ def generate_pdf(template_path, output_path, positions_data, variables):
         if page_num not in pages_content:
             pages_content[page_num] = []
         pages_content[page_num].append(item)
+
+    print("étape 2 generate_pdf")
+
+    image_folder = 'images-memoire-technique-temp'
+
+    # Extraire les images du PDF
+    extraire_images(memoire_file_path, image_folder)
+
+    # Traiter les images
+    traiter_images(image_folder)
 
     # Générer le contenu pour chaque page
     for page_num in range(num_pages):
@@ -133,16 +153,20 @@ def generate_pdf(template_path, output_path, positions_data, variables):
                 if font_bold:
                     font_name += '-Bold'
 
+                print("étape 3 generate_pdf")
+
                 # Remplacer les variables dans le texte
                 if text in variables:
                     text = variables[text]
                 else:
                     text = variables.get(text, text)
 
+                print("étape 4 generate_pdf")
+
                 # Convertir la couleur hexadécimale en objet couleur
                 color = HexColor(color)
 
-                # Supprimer les motifs "nXX:YY†sourcen"
+                # Étape 1 : Supprimer les motifs "nXX:YY†sourcen"
                 cleaned_text = remove_reference_pattern(text)
 
                 # Définir la police et la taille
@@ -151,6 +175,8 @@ def generate_pdf(template_path, output_path, positions_data, variables):
 
                 # Ajuster le positionnement en fonction de l'origine de ReportLab
                 y = page_height - y  # Inverser l'axe vertical
+
+                print("étape 5 generate_pdf")
 
                 # Découper le texte pour qu'il tienne dans la largeur spécifiée pour chaque placeholder
                 wrapped_text_lines = wrap_text(c, str(cleaned_text), width)
@@ -171,6 +197,7 @@ def generate_pdf(template_path, output_path, positions_data, variables):
 
                     # Déplacer le `y` vers le bas pour la ligne suivante
                     y -= int(line_height)
+                    print(f"étape 6 generate_pdf. y : {y}")
                 
         if page_num == 11:  # Python compte à partir de 0, donc la page 12 est indexée par 11
             try:
@@ -183,6 +210,7 @@ def generate_pdf(template_path, output_path, positions_data, variables):
                 
                 # Tenter de dessiner l'image
                 c.drawImage('organigramme.png', image_x, image_y, image_width, image_height)
+                print(f"Organigramme ajouté à la page {page_num + 1}")
 
             except FileNotFoundError:
                 print(f"Erreur : Le fichier 'organigramme.png' n'a pas été trouvé.")
@@ -190,16 +218,59 @@ def generate_pdf(template_path, output_path, positions_data, variables):
                 print(f"Erreur : Impossible de charger l'image. Détails : {e}")
             except Exception as e:
                 print(f"Une erreur inattendue s'est produite lors de l'ajout de l'image : {e}")
+        
+        moe_folder = 'images-memoire-technique-temp/machine_outil_engins'
+        chantier_folder = 'images-memoire-technique-temp/chantier'
 
-
+        if page_num == 14:
+            try:
+                moe_images = [f for f in os.listdir(moe_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:3]
+                y_position = 750  # Position initiale de y (proche du haut de la page)
+                for img_file in moe_images:
+                    img_path = os.path.join(moe_folder, img_file)
+                    image = Image.open(img_path)
+                        # Obtenir la taille de l'image en pixels
+                    img_width, img_height = image.size
+                        # Convertir la taille de l'image de pixels à points (1 pouce = 72 points)
+                        # En supposant que l'image est en 72 DPI par défaut si aucune information n'est fournie
+                    img_width_pt = img_width * 72.0 / image.info.get('dpi', (72, 72))[0]
+                    img_height_pt = img_height * 72.0 / image.info.get('dpi', (72, 72))[1]
+                    c.drawImage(ImageReader(img_path), inch, y_position - img_height_pt, width=img_width_pt, height=img_height_pt)
+                    y_position -= (img_height_pt + inch)
+            except:
+                print("erreur images machine outil engins page 15")
+        
+        if page_num == 22:
+            try:
+                chantier_images = [f for f in os.listdir(chantier_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:3]
+                y_position = 750  # Position initiale de y (proche du haut de la page)
+                for img_file in chantier_images:
+                    img_path = os.path.join(chantier_folder, img_file)
+                    image = Image.open(img_path)
+                        # Obtenir la taille de l'image en pixels
+                    img_width, img_height = image.size
+                        # Convertir la taille de l'image de pixels à points (1 pouce = 72 points)
+                        # En supposant que l'image est en 72 DPI par défaut si aucune information n'est fournie
+                    img_width_pt = img_width * 72.0 / image.info.get('dpi', (72, 72))[0]
+                    img_height_pt = img_height * 72.0 / image.info.get('dpi', (72, 72))[1]
+                    c.drawImage(ImageReader(img_path), inch, y_position - img_height_pt, width=img_width_pt, height=img_height_pt)
+                    y_position -= (img_height_pt + inch)
+            except:
+                print("erreur images chantiers page 23")
+                
         # Passer à la page suivante
         c.showPage()
+    
 
     # Finaliser le PDF temporaire
     c.save()
 
+    print("étape save temporaire")
+
     # Lire le PDF temporaire
     overlay_pdf = PdfReader(temp_pdf_path)
+
+    print("étape 7 generate_pdf")
 
     # Fusionner les deux PDFs
     for page_num in range(num_pages):
@@ -214,3 +285,4 @@ def generate_pdf(template_path, output_path, positions_data, variables):
 
     # Supprimer le fichier temporaire
     os.remove(temp_pdf_path)
+

@@ -4,5 +4,9 @@ requests
 Werkzeug 
 pdfrw 
 reportlab
-graphviz
-pydantic
+PyMuPDF
+frontend
+python-dotenv
+
+#!/bin/bash
+# sudo apt-get install graphviz

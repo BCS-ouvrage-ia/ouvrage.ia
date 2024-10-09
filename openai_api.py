@@ -31,6 +31,7 @@ def upload_file_to_openai(file_path, file_path_openai, purpose='assistants'):
                 purpose=purpose
             )
         file_id = response.id
+        print("fichier envoyé")
 
     finally:
         # Renommer le fichier à son nom original `file_path` après l'envoi
@@ -67,6 +68,8 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
     )
     run_id = run.id
 
+    print("etape post run_id")
+
     # Récupérer le run jusqu'à ce que le statut soit "completed"
     while True:
         run_info = openai.beta.threads.runs.retrieve(
@@ -81,10 +84,15 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
         else:
             time.sleep(1)  # Attendre avant de vérifier à nouveau
 
+    print("etape post retrieve run")
+
     # Extraire la réponse de l'assistant
     thread_messages = openai.beta.threads.messages.list(thread_id)
     messages = thread_messages.data
     assistant_response = ''
+
+    print("etape post reponse assistant")
+
 
     # Parcourir les messages pour trouver la réponse de l'assistant
     for message in messages:

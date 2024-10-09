@@ -30,7 +30,7 @@ Veille à ce que ce paragraphe, d'une longueur de 10 à 15 lignes, réponde pré
 Exemple :
 "Attirée par les défis, et soucieuse d’apprendre de chaque projet, notre entreprise s’engage à trouver une solution pour chaque problème. Pour cette raison, toutes nos réalisations sont garanties de résultats. Notre équipe qualifiée reste disponible pour vous assurer une assistance 7j/7."
 Ce paragraphe fera entre 5 et 10 lignes.""",
-    "conformité": """Rédige la conclusion de l'introduction du mémoire technique pour la société {nom_entreprise}. Ce mémoire doit répondre précisément aux exigences du dossier de consultation : dossier-consultation.pdf. Tu t'assureras de mentionner la conformité aux attentes, le respect des modalités et délais de soumission, les visites obligatoires (si applicables), ainsi que les documents complémentaires fournis.
+    "conformite": """Rédige la conclusion de l'introduction du mémoire technique pour la société {nom_entreprise}. Ce mémoire doit répondre précisément aux exigences du dossier de consultation : dossier-consultation.pdf. Tu t'assureras de mentionner la conformité aux attentes, le respect des modalités et délais de soumission, les visites obligatoires (si applicables), ainsi que les documents complémentaires fournis.
 Utilise pour cela les prérequis extraits du dossier de consultation suivants :
 "{requis_dossier_consultation}"
 Ce paragraphe fera entre 5 et 10 lignes.""",

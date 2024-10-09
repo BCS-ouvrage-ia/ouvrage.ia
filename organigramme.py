@@ -1,12 +1,17 @@
 from __future__ import annotations
 from pydantic import BaseModel
 from typing import List, Optional
+import os
+from dotenv import load_dotenv
 import json
 import openai
 from graphviz import Digraph
 from openai_api import extract_team_from_text
 
-openai.api_key = "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"
+# Si local
+load_dotenv()
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
 def generate_design(employee: Employee, dot=None):
