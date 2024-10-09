@@ -1,0 +1,324 @@
+[
+    {
+        "text": "nom_projet",
+        "x": 75,
+        "y": 220,
+        "width": 450,
+        "height": 125,
+        "alignment": "center",
+        "pages": "0",
+        "color": "#000000",
+        "size": 16,
+        "fontBold": true
+    },
+    {
+        "text": "nom_entreprise",
+        "x": 225,
+        "y": 570,
+        "width": 200,
+        "height": 25,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#FFFFFF"
+    },
+    {
+        "text": "adresse",
+        "x": 225,
+        "y": 590,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#FFFFFF"
+    },
+    {
+        "text": "code postal",
+        "x": 225,
+        "y": 608,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#FFFFFF"
+    },
+    {
+        "text": "ville",
+        "x": 267,
+        "y": 608,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#FFFFFF"
+    },
+    {
+        "text": "numero_siren",
+        "x": 274,
+        "y": 625,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#FFFFFF"
+    },
+    {
+        "text": "nom_entreprise",
+        "x": 320,
+        "y": 209,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "3",
+        "color": "#000000"
+    },
+    {
+        "text": "adresse",
+        "x": 320,
+        "y": 274,
+        "width": 180,
+        "height": 21,
+        "alignment": "left",
+        "pages": "3",
+        "color": "#000000"
+    },
+    {
+        "text": "numero_siren",
+        "x": 320,
+        "y": 356,
+        "width": 200,
+        "height": 21,
+        "pages": "3"
+    },
+    {
+        "text": "chiffre_affaire",
+        "x": 320,
+        "y": 408,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "3",
+        "color": "#000000"
+    },
+    {
+        "text": "historique",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "4",
+        "color": "#000000"
+    },
+    {
+        "text": "expertise",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "5",
+        "color": "#000000"
+    },
+    {
+        "text": "vision_et_valeurs",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 200,
+        "alignment": "left",
+        "pages": "6",
+        "color": "#000000"
+    },
+    {
+        "text": "conformité",
+        "x": 45,
+        "y": 430,
+        "width": 900,
+        "height": 150,
+        "alignment": "left",
+        "pages": "6",
+        "color": "#000000"
+    },
+    {
+        "text": "services_et_competences",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "8",
+        "color": "#000000"
+    },
+    {
+        "text": "competences_techniques_specifiques",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "9",
+        "color": "#000000"
+    },
+    {
+        "text": "qualifications",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "12",
+        "color": "#000000"
+    },
+    {
+        "text": "moyens_techniques",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "13",
+        "color": "#000000"
+    },
+    {
+        "text": "engagement_qualite",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "15",
+        "color": "#000000"
+    },
+    {
+        "text": "certifications",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "16",
+        "color": "#000000"
+    },
+    {
+        "text": "respect_normes_securite",
+        "x": 45,
+        "y": 205,
+        "width": 550,
+        "height": 550,
+        "alignment": "left",
+        "pages": "17",
+        "color": "#000000"
+    },
+    {
+        "text": "respect_environnement",
+        "x": 45,
+        "y": 205,
+        "width": 620,
+        "height": 450,
+        "alignment": "left",
+        "pages": "18",
+        "color": "#000000"
+    },
+    {
+        "text": "references_et_realisations_passees",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "20",
+        "color": "#000000"
+    },
+    {
+        "text": "partenariats_strategiques",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "21",
+        "color": "#000000"
+    },
+    {
+        "text": "temoignages",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "22",
+        "color": "#000000"
+    },
+    {
+        "text": "methode_gestion_projet",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "24",
+        "color": "#000000"
+    },
+    {
+        "text": "planning",
+        "x": 45,
+        "y": 205,
+        "width": 900,
+        "height": 600,
+        "alignment": "left",
+        "pages": "25",
+        "color": "#000000"
+    },
+    {
+        "text": "nom_entreprise",
+        "x": 250,
+        "y": 170,
+        "width": 200,
+        "height": 25,
+        "alignment": "left",
+        "pages": "26",
+        "size": 14,
+        "fontBold": true,
+        "color": "#000000"
+    },
+    {
+        "text": "adresse",
+        "x": 250,
+        "y": 200,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "26",
+        "color": "#000000"
+    },
+    {
+        "text": "code postal",
+        "x": 250,
+        "y": 218,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "26",
+        "color": "#000000"
+    },
+    {
+        "text": "ville",
+        "x": 287,
+        "y": 218,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "26",
+        "color": "#000000"
+    },
+    {
+        "text": "email",
+        "x": 250,
+        "y": 235,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "26",
+        "color": "#000000"
+    }
+]

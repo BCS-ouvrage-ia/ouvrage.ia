@@ -1,0 +1,8 @@
+flask 
+openai 
+requests 
+Werkzeug 
+pdfrw 
+reportlab
+graphviz
+pydantic
