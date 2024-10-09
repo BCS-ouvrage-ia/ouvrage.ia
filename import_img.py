@@ -99,8 +99,6 @@ def traiter_images(image_folder):
     os.makedirs(moe_folder, exist_ok=True)
     os.makedirs(autres_folder, exist_ok=True)
 
-    '''
-
     for filename in os.listdir(image_folder):
         filepath = os.path.join(image_folder, filename)
         if not os.path.isfile(filepath):
@@ -109,12 +107,19 @@ def traiter_images(image_folder):
             continue
         image_path = os.path.join(image_folder, filename)
         
-        # Obtenir une URL publique pour l'image
-        image_url = upload_image_and_get_public_url(image_path)
-        
-        print(f"Analyse de {filename}...")
-        classification = classifier_image(image_url)
-        print(f"Classification: {classification}")
+        try:
+            # Obtenir une URL publique pour l'image
+            image_url = upload_image_and_get_public_url(image_path)
+        except Exception as e:
+            print(f"Erreur lors de l'obtention de l'URL publique de l'image : {e}")
+            image_url = None
+
+        try:
+            # Classifier l'image en utilisant l'URL obtenue
+            classification = classifier_image(image_url)
+        except Exception as e:
+            print(f"Erreur lors de la classification de l'image : {e}")
+            classification = 'autre'
         
         if 'chantier' in classification:
             dest_folder = chantier_folder
@@ -126,8 +131,6 @@ def traiter_images(image_folder):
             print(f"Impossible de classifier {filename}, passage au suivant.")
             continue
         shutil.move(image_path, os.path.join(dest_folder, filename))
-
-        '''
     
 def supprimer_images(image_folder):
     for root, dirs, files in os.walk(image_folder):
