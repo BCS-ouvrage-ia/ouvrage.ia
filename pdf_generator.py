@@ -97,8 +97,6 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
         # Remplacer les \n par \u000A dans les textes de positions_data
     positions_data = replace_newlines_in_text(positions_data)
 
-    print(positions_data)
-
     # Lire le template PDF pour obtenir le nombre de pages
     template_pdf = PdfReader(template_path)
     num_pages = len(template_pdf.pages)
@@ -153,15 +151,11 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                 if font_bold:
                     font_name += '-Bold'
 
-                print("étape 3 generate_pdf")
-
                 # Remplacer les variables dans le texte
                 if text in variables:
                     text = variables[text]
                 else:
                     text = variables.get(text, text)
-
-                print("étape 4 generate_pdf")
 
                 # Convertir la couleur hexadécimale en objet couleur
                 color = HexColor(color)
@@ -175,8 +169,6 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
 
                 # Ajuster le positionnement en fonction de l'origine de ReportLab
                 y = page_height - y  # Inverser l'axe vertical
-
-                print("étape 5 generate_pdf")
 
                 # Découper le texte pour qu'il tienne dans la largeur spécifiée pour chaque placeholder
                 wrapped_text_lines = wrap_text(c, str(cleaned_text), width)
@@ -197,7 +189,6 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
 
                     # Déplacer le `y` vers le bas pour la ligne suivante
                     y -= int(line_height)
-                    print(f"étape 6 generate_pdf. y : {y}")
                 
         if page_num == 11:  # Python compte à partir de 0, donc la page 12 est indexée par 11
             try:
@@ -265,12 +256,12 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     # Finaliser le PDF temporaire
     c.save()
 
-    print("étape save temporaire")
+    print("étape 3 generate_pdf")
 
     # Lire le PDF temporaire
     overlay_pdf = PdfReader(temp_pdf_path)
 
-    print("étape 7 generate_pdf")
+    print("étape 4 generate_pdf")
 
     # Fusionner les deux PDFs
     for page_num in range(num_pages):
