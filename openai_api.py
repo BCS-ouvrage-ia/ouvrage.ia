@@ -6,9 +6,11 @@ from typing import List
 import time
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
 
-OPENAI_API_KEY = "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"
-openai.api_key = "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"
+load_dotenv()
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Modèle Pydantic pour représenter une personne avec son nom et poste
 class PersonExtraction(BaseModel):
