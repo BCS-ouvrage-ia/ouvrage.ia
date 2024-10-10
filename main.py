@@ -36,12 +36,12 @@ CONSULT_FOLDER = 'dossiers_consultations'
 MEMOIRES_FOLDER = 'memoires_techniques'
 
 # ID du vector store
-VECTOR_STORE_ID = 'vs_IyGzkG7HGPqpIFtuzr0UgiCR'
-VECTOR_STORE_ID_ANALYSE_DOSSIER = 'vs_lc0RVpKtJO4pF5SVNJCssvTs'  # Pour les dossiers de consultation
+VECTOR_STORE_ID = 'vs_vM8RUnO08wYP2Bg9wMRppEO4'
+VECTOR_STORE_ID_ANALYSE_DOSSIER = 'vs_JEHExsSUFDlcOhPccPrLd4BT'  # Pour les dossiers de consultation
 
 # ID Assistant
-ASSISTANT_ID = 'asst_IF9ukfPwD72IhQCRjJQM9dkf'
-ASSISTANT_ID_ANALYSE_DOSSIER = 'asst_gb47ytL6g9zf04Hu8SFi7he6'
+ASSISTANT_ID = 'asst_r6VpwkiZjhYzKkL1hIEsByzB'
+ASSISTANT_ID_ANALYSE_DOSSIER = 'asst_f9Ebulahc8qf2vjsaxCPTgTr'
 
 # Chemins des fichiers pour stocker les thread_id
 THREAD_ID_FILE = 'thread_ids.json'
