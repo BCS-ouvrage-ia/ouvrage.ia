@@ -1,18 +1,19 @@
-from flask import Flask, request, jsonify, send_file
-import requests
+from flask import Flask, request, jsonify
 import os
 import copy
 import openai
 import json
+import requests
 # Si local
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from utils import (
     allowed_file, 
-    get_user_data_from_xano, 
+    get_user_data_from_webflow, 
     get_thread_id, 
     save_thread_id,
-    reset_file
+    reset_file,
+    send_pdf_file
 )
 from openai_api import (
     upload_file_to_openai,
@@ -22,6 +23,7 @@ from openai_api import (
     delete_file_in_openai,
 )
 from prompts import prompts, prompts_dossier
+from download_file import download_from_asset_id
 from pdf_generator import generate_pdf
 from organigramme import generer_organigramme
 from import_img import supprimer_images
@@ -36,137 +38,19 @@ CONSULT_FOLDER = 'dossiers_consultations'
 MEMOIRES_FOLDER = 'memoires_techniques'
 
 # ID du vector store
-VECTOR_STORE_ID = 'vs_vM8RUnO08wYP2Bg9wMRppEO4'
-VECTOR_STORE_ID_ANALYSE_DOSSIER = 'vs_JEHExsSUFDlcOhPccPrLd4BT'  # Pour les dossiers de consultation
+VECTOR_STORE_ID = 'vs_IyGzkG7HGPqpIFtuzr0UgiCR'
+VECTOR_STORE_ID_ANALYSE_DOSSIER = 'vs_lc0RVpKtJO4pF5SVNJCssvTs'  # Pour les dossiers de consultation
 
 # ID Assistant
-ASSISTANT_ID = 'asst_r6VpwkiZjhYzKkL1hIEsByzB'
-ASSISTANT_ID_ANALYSE_DOSSIER = 'asst_f9Ebulahc8qf2vjsaxCPTgTr'
+ASSISTANT_ID = 'asst_IF9ukfPwD72IhQCRjJQM9dkf'
+ASSISTANT_ID_ANALYSE_DOSSIER = 'asst_gb47ytL6g9zf04Hu8SFi7he6'
 
 # Chemins des fichiers pour stocker les thread_id
 THREAD_ID_FILE = 'thread_ids.json'
 THREAD_ID_ANALYSE_DOSSIER_FILE = 'thread_ids_dossier.json'
 
-# Remplacez par votre endpoint API Xano réel
-XANO_API_ENDPOINT_USERS = 'https://x8ki-letl-twmt.n7.xano.io/api:k69uEWXD/Add_User'
-XANO_API_ENDPOINT_SEND_FILE = 'https://x8ki-letl-twmt.n7.xano.io/api:k69uEWXD/upload/image'
-
 # Clés API
-# XANO_API_KEY = 'votre_cle_api_xano'
 openai.api_key = os.getenv('OPENAI_API_KEY')
-
-@app.route('/webhook/creer-nouveau-utilisateur', methods=['POST'])
-def creer_nouveau_utilisateur():
-    data = request.get_json()
-
-    # Extraction des données reçues
-    nom_entreprise = data.get('nom entreprise')
-    prenom = data.get('prénom')
-    nom = data.get('nom')
-    email = data.get('email')
-    role = data.get('role')
-    annee_creation = data.get('année création')
-    activite = data.get('activité')
-    code_NAF = data.get('code NAF')
-    adresse = data.get('adresse')
-    ville = data.get('ville')
-    code_postal = data.get('code postal')
-    effectif = data.get('effectif')
-    chiffre_affaire = data.get('numero_siren')
-    numero_siren = data.get('numero_siren')
-
-    # Préparation des données pour Xano
-    payload = {
-        'nom_entreprise': nom_entreprise,
-        'prenom': prenom,
-        'nom': nom,
-        'email': email,
-        'role': role,
-        'annee_creation': annee_creation,
-        'activite': activite,
-        'code_NAF': code_NAF,
-        'adresse': adresse,
-        'ville': ville,
-        'code_postal': code_postal,
-        'effectif': effectif,
-        'numero_siren': numero_siren,
-        'chiffre_affaire': chiffre_affaire
-    }
-
-    headers = {
-        'Content-Type': 'application/json',
-        # 'Authorization': f'Bearer {XANO_API_KEY}'
-    }
-
-    # Envoi des données à Xano
-    try:
-        response = requests.post(XANO_API_ENDPOINT_USERS, json=payload, headers=headers)
-        response.raise_for_status()
-        return jsonify({'status': 'success', 'data': response.json()}), 200
-    except requests.exceptions.RequestException as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-
-@app.route('/webhook/enregistrer-memoire-technique', methods=['POST'])
-def enregistrer_memoire_technique():
-    # Vérifie si le fichier est présent dans la requête
-    if 'file' not in request.files:
-        return jsonify({'status': 'error', 'message': 'Aucun fichier fourni'}), 400
-
-    file = request.files['file']
-
-    # Vérifie si un fichier a été sélectionné
-    if file.filename == '':
-        return jsonify({'status': 'error', 'message': 'Aucun fichier sélectionné'}), 400
-
-    if file and allowed_file(file.filename):
-        # Récupère les données supplémentaires
-        nom_entreprise = request.form.get('nom entreprise')
-        prenom = request.form.get('prénom')
-        nom = request.form.get('nom')
-
-        if not all([nom_entreprise, prenom, nom]):
-            return jsonify({'status': 'error', 'message': 'Données manquantes'}), 400
-
-        # Crée le nom de fichier selon la convention
-        filename = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique.pdf"
-        filename = secure_filename(filename)
-
-        # Enregistre le fichier dans le dossier spécifié
-        file_path = os.path.join(MEMOIRES_FOLDER, filename)
-        file.save(file_path)
-
-        # Envoie le fichier à Xano : Besoin Xano Premium
-        '''
-        headers = {
-            # 'Authorization': f'Bearer {XANO_API_KEY}'
-        }
-        data = {
-            'nom_entreprise': nom_entreprise,
-            'prenom': prenom,
-            'nom': nom
-        }
-
-        try:
-            # Utilisation du bloc 'with' pour ouvrir le fichier
-            with open(file_path, 'rb') as f:
-                files = {
-                    'file': (filename, f, 'application/pdf')
-                }
-                response = requests.post(XANO_API_ENDPOINT_SEND_FILE, headers=headers, files=files, data=data)
-            response.raise_for_status()
-            return jsonify({'status': 'success', 'message': 'Fichier envoyé à Xano avec succès'}), 200
-        except requests.exceptions.RequestException as e:
-            return jsonify({'status': 'error', 'message': str(e)}), 500
-        '''
-        
-        # Uniquement la ligne qui suit, à supprimer après avoir fait l'intégration avec Xano premium
-        return jsonify({'status': 'success', 'message': 'Memoire technique bien enregistre'}), 200
-    else:
-        return jsonify({'status': 'error', 'message': 'Type de fichier non autorisé. Seuls les PDF sont acceptés.'}), 400
-
-
 
 @app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
@@ -181,14 +65,29 @@ def generer_memoire_technique():
         return jsonify({'status': 'error', 'message': 'Aucun fichier sélectionné'}), 400
 
     if file and allowed_file(file.filename):
-        # Récupère les données supplémentaires
-        nom_entreprise = request.form.get('nom entreprise')
-        prenom = request.form.get('prénom')
-        nom = request.form.get('nom')
+        # Récupère le User ID depuis la requête
+        user_id = request.form.get('user_id')
+
+        if not user_id:
+            return jsonify({'status': 'error', 'message': 'User ID manquant'}), 400
+
+        # Récupère les données de l'utilisateur depuis Webflow
+        user_data = get_user_data_from_webflow(user_id)
+
+        if not user_data:
+            return jsonify({'status': 'error', 'message': 'Données utilisateur introuvables'}), 400
+
+        # Extraction des informations de l'utilisateur
+        user_info = user_data
+        field_data = user_info.get('fieldData', {})
+
+        nom_entreprise = field_data.get('nom-entreprise')
+        prenom = field_data.get('prenom')
+        nom = field_data.get('nom')
+        asset_id = field_data.get('memoire-technique-2')
 
         if not all([nom_entreprise, prenom, nom]):
-            return jsonify({'status': 'error', 'message': 'Données manquantes'}), 400
-
+            return jsonify({'status': 'error', 'message': 'Données utilisateur incomplètes'}), 400
         # Crée le nom de fichier selon la convention
         filename = f"{prenom}-{nom}-{nom_entreprise}-dossier-consultation.pdf"
         filename = secure_filename(filename)
@@ -201,8 +100,26 @@ def generer_memoire_technique():
         memoire_filename = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique.pdf"
         memoire_file_path = os.path.join(MEMOIRES_FOLDER, memoire_filename)
 
+        # Enregistrer memoire technique
+        download_from_asset_id(asset_id, memoire_file_path)
+        '''
+        try:
+        # Requête pour télécharger le fichier PDF
+            response = requests.get(url, stream=True)
+            response.raise_for_status()  # Vérifie si la requête a réussi
+            
+            # Téléchargement et écriture du fichier en chunks pour éviter la surcharge de mémoire
+            with open(memoire_file_path, 'wb') as pdf_file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    pdf_file.write(chunk)
+            
+        except requests.exceptions.RequestException as e:
+            print(f"Erreur lors du téléchargement du fichier : {e}")
+            return None
+
         if not os.path.exists(memoire_file_path):
             return jsonify({'status': 'error', 'message': f'Le fichier memoire technique associé est introuvable : {memoire_file_path}'}), 400
+        '''
 
         try:
             # Upload du fichier dossier de consultation à OpenAI
@@ -230,20 +147,14 @@ def generer_memoire_technique():
                 response = run_assistant_interaction(ASSISTANT_ID_ANALYSE_DOSSIER, prompt, thread_id_dossier)
                 assistant_responses_dossier[key] = response
 
-            # Récupération des données depuis Xano
-            user_data = get_user_data_from_xano(nom_entreprise)
-
-            # Récupérer ou créer le thread_id
+            # Récupérer ou créer le thread_id pour les prompts successifs
             thread_id = get_thread_id(nom_entreprise, THREAD_ID_FILE)
             if not thread_id:
-                # Si aucun thread_id n'existe pour cette entreprise, en créer un nouveau
                 thread_id = create_thread()
                 save_thread_id(nom_entreprise, thread_id, THREAD_ID_FILE)
 
-                # Dictionnaire pour stocker les réponses
+            # Dictionnaire pour stocker les réponses et variables pour remplacer les placeholders
             assistant_responses = {}
-
-            # Variables pour remplacer les placeholders
             variables = {
                 'nom_projet': assistant_responses_dossier.get('nom_projet', ''),
                 'infos_dossier_consultation': assistant_responses_dossier.get('infos_dossier_consultation', ''),
@@ -253,47 +164,34 @@ def generer_memoire_technique():
 
             # Exécution des prompts successifs
             for key, prompt in prompts.items():
-                # Remplacement des placeholders dans le prompt
                 formatted_prompt = prompt.format(**variables)
-
-                # Interaction avec l'Assistant API
                 response = run_assistant_interaction(ASSISTANT_ID, formatted_prompt, thread_id)
-
-                # Stockage de la réponse
                 assistant_responses[key] = response
 
                 if key == 'moyens_humains':
                     generer_organigramme(response)
-                    print("étape generer organigramme")
 
                 # Mise à jour des variables si nécessaire
                 if key in ['nom_projet', 'infos_dossier_consultation', 'requis_dossier_consultation']:
                     variables[key] = response
 
-            template_path = 'template_memoire_technique.pdf'
+            # Chemin du template
+            template_path = 'template/template_memoire_technique.pdf'
 
             # Chemin de sortie du PDF final
             output_pdf_path = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique-final.pdf"
 
-            # Lire les données de positions depuis le fichier JSON
-            with open('positions_data.json', 'r', encoding='utf-8') as f:
-                positions_data = json.load(f)
-
-            if user_data and isinstance(user_data[0], dict):
-                user_dict = user_data[0]
-            # Préparer les variables supplémentaires
+            # Préparer les informations supplémentaires pour le PDF
             variables.update({
-                'adresse': user_dict.get('adresse', 'Adresse de l\'entreprise'),
-                'numero_siren': user_dict.get('numero_siren', 'Numéro de SIREN'),
-                'chiffre_affaire': user_dict.get('chiffre_affaire', 'Chiffre d\'affaires'),
-                'code postal': user_dict.get('code postal', 'XXXXX'),
-                'ville': user_dict.get('ville', 'VILLE'),
-                'email': user_dict.get('email', 'xxxx@xxxxxx.fr')
+                'adresse': field_data.get('adresse', 'Adresse de l\'entreprise'),
+                'numero_siren': field_data.get('numero_siren', 'Numéro de SIREN'),
+                'chiffre_affaire': field_data.get('chiffre-affaire', 'Chiffre d\'affaires'),
+                'code postal': field_data.get('code-postal', 'XXXXX'),
+                'ville': field_data.get('ville', 'VILLE'),
+                'email': field_data.get('email', 'xxxx@xxxxxx.fr')
             })
+            # Séquence qui crée un fichier temporaire pour les positions modifiées
 
-            # Séquence qui créer un fichier temp :
-
-            # Lire le fichier JSON source
             with open('positions_data.json', 'r') as f:
                 positions_data = json.load(f)
 
@@ -317,35 +215,21 @@ def generer_memoire_technique():
             with open('positions_data_temp.json', 'w') as f:
                 json.dump(positions_data_temp, f, indent=4)
 
-
-            # Générer le PDF
+            # Génération du PDF final
             generate_pdf(template_path, output_pdf_path, positions_data_temp, variables, memoire_file_path)
-            
-            #commenté pour test
-            if os.path.exists('positions_data_temp.json'):
-                os.remove('positions_data_temp.json')
-            
+
+            send_pdf_file(output_pdf_path, user_id)
             delete_file_in_openai(consultation_file_id)
             delete_file_in_openai(memoire_file_id)
-
             reset_file(THREAD_ID_FILE)
             reset_file(THREAD_ID_ANALYSE_DOSSIER_FILE)
+            supprimer_images('images-memoire-technique-temp')
 
-            image_folder = 'images-memoire-technique-temp'
-            supprimer_images(image_folder)
-
-
-            return send_file(output_pdf_path, as_attachment=True, mimetype='application/pdf')
-
-            '''
             return jsonify({
-                'status': 'success',
-                'message': 'Processus terminé avec succès',
-                'assistant_responses': assistant_responses,
-                'pdf_generated': output_pdf_path
-            }), 200
-
-            '''
+                "status": "success",
+                "message": "Le mémoire technique a été généré avec succès.",
+                "file_path": output_pdf_path  # Facultatif, en fonction de vos besoins
+            })
         except FileNotFoundError as e:
             return jsonify({'status': 'error', 'message': f'Fichier non trouvé: {str(e)}'}), 500
         except Exception as e:
@@ -355,6 +239,5 @@ def generer_memoire_technique():
         return jsonify({'status': 'error', 'message': 'Type de fichier non autorisé. Seuls les PDF sont acceptés.'}), 400
 
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
