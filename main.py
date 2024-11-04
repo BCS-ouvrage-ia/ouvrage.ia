@@ -102,6 +102,9 @@ def generer_memoire_technique():
     memoire_filename = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique.pdf"
     memoire_file_path = os.path.join(MEMOIRES_FOLDER, memoire_filename)
 
+    # test asset_id
+    asset_id = "80f58944-8cd0-447d-b324-24b310bf99ae"
+
     # Enregistrer memoire technique
     download_from_asset_id(asset_id, memoire_file_path)
     '''
