@@ -85,7 +85,7 @@ def generer_memoire_technique():
     nom_entreprise = field_data.get('nom-entreprise')
     prenom = field_data.get('prenom')
     nom = field_data.get('nom')
-    asset_id = field_data.get('memoire-technique-2')
+    asset_id = field_data.get('memoire-technique-3')
 
     if not all([nom_entreprise, prenom, nom]):
         return jsonify({'status': 'error', 'message': 'Données utilisateur incomplètes'}), 400
