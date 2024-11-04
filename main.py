@@ -51,9 +51,15 @@ THREAD_ID_ANALYSE_DOSSIER_FILE = 'thread_ids_dossier.json'
 
 # Clés API
 openai.api_key = os.getenv('OPENAI_API_KEY')
+API_KEY = "61735865-8b6d-4cf4-8ceb-cb4a3901c357"
 
 @app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
+
+    api_key = request.headers.get('X-API-KEY')
+    if api_key != API_KEY:
+        return jsonify({'status': 'error', 'message': 'Clé API invalide ou manquante'}), 403
+    
     # Récupère le User ID depuis la requête
     user_id = request.json.get('user_id')
 
