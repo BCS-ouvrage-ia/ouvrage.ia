@@ -55,12 +55,12 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 @app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
     # Récupère le User ID depuis la requête
-    user_id = request.form.get('user_id')
+    user_id = request.json.get('user_id')
 
     if not user_id:
         return jsonify({'status': 'error', 'message': 'User ID manquant'}), 400
 
-    file_id = request.form.get('asset_id')
+    file_id = request.json.get('asset_id')
 
     if not file_id:
         return jsonify({'status': 'error', 'message': 'Asset ID manquant'}), 400
