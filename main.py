@@ -223,7 +223,19 @@ def generer_memoire_technique():
         # Génération du PDF final
         generate_pdf(template_path, output_pdf_path, positions_data_temp, variables, memoire_file_path)
 
-        send_pdf_file(output_pdf_path, user_id)
+        try:
+            pdf_sent = send_pdf_file(output_pdf_path, user_id)
+            if not pdf_sent:
+                return jsonify({
+                    "status": "failure",
+                    "message": "Échec de l'envoi du fichier PDF. Consultez les logs pour plus de détails."
+                })
+        except Exception as e:
+            return jsonify({
+                "status": "failure",
+                "message": f"Erreur critique dans le script principal : {e}"
+            })
+        
         delete_file_in_openai(consultation_file_id)
         delete_file_in_openai(memoire_file_id)
         reset_file(THREAD_ID_FILE)
@@ -233,7 +245,7 @@ def generer_memoire_technique():
         return jsonify({
             "status": "success",
             "message": "Le mémoire technique a été généré avec succès.",
-            "file_path": output_pdf_path  # Facultatif, en fonction de vos besoins
+            "file_path": output_pdf_path
         })
     except FileNotFoundError as e:
         return jsonify({'status': 'error', 'message': f'Fichier non trouvé: {str(e)}'}), 500
