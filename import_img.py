@@ -32,7 +32,7 @@ def extraire_images(pdf_path, output_folder):
         page = pdf_file[page_index]
         images = page.get_images(full=True)
         # Parcourir les images de la page
-        for img_index, img in enumerate(images):
+        for img_index, img in enumerate(images[:15]):
             xref = img[0]
             base_image = pdf_file.extract_image(xref)
             image_bytes = base_image["image"]
