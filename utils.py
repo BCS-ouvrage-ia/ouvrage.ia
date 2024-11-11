@@ -204,7 +204,9 @@ def send_pdf_file(output_pdf_file, user_id):
         f"https://api.webflow.com/v2/collections/{MEMOIRE_TECHNIQUE_GENERATED_COLLECTION_ID}/items/live",
         headers=headers,
         json={
-            "fields": {
+            "isArchived": False,
+            "isDraft": False,
+            "fieldData": {
                 "name": file_name_with_ext,  # Conserver l'extension dans le nom
                 "slug": slug,
                 "user-id": user_id,
