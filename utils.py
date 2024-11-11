@@ -216,7 +216,7 @@ def send_pdf_file(output_pdf_file, user_id):
     )
 
     # Vérification de la réponse pour la création de l'item
-    if response.status_code in [200, 201]:
+    if response.status_code in [200, 201, 202]:
         print("L'entrée a été ajoutée avec succès à la collection en mode live.")
         return True
     else:
