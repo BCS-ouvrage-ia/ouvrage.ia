@@ -16,10 +16,8 @@ import fitz
 # Si local
 load_dotenv()
 
-# Remplacez 'VOTRE_CLE_API' par votre clé API OpenAI
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# Remplacez 'VOTRE_CLE_API_IMGBB' par votre clé API IMGBB
 IMGBB_API_KEY = '6ab00e1783ac20da3c3a8dde22a83f7a'
 
 def extraire_images(pdf_path, output_folder):
