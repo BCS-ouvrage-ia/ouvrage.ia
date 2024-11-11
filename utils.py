@@ -162,6 +162,7 @@ def create_asset(file_path):
         print("Impossible de récupérer l'URL de l'asset.")
         return None
 
+
 def send_pdf_file(output_pdf_file, user_id):
     """
     Envoie un fichier PDF en tant qu'asset sur Webflow et ajoute un item dans la collection avec l'URL de l'asset et l'ID utilisateur.
@@ -170,55 +171,69 @@ def send_pdf_file(output_pdf_file, user_id):
     :param user_id: Identifiant de l'utilisateur pour référence
     :return: True si l'opération réussit, False sinon
     """
-    # Vérification de l'existence du fichier
-    if not os.path.exists(output_pdf_file):
-        print(f"Le fichier {output_pdf_file} n'existe pas.")
+    try:
+        # Vérification de l'existence du fichier
+        if not os.path.exists(output_pdf_file):
+            raise FileNotFoundError(f"Le fichier {output_pdf_file} n'existe pas.")
+
+        # Création de l'asset et récupération de son URL
+        asset_url = create_asset(output_pdf_file)
+        if not asset_url:
+            raise ValueError("Impossible de créer l'asset : l'URL de l'asset est vide ou invalide.")
+
+        # Nom du fichier pour l'item
+        file_name_with_ext = os.path.basename(output_pdf_file)
+        file_name, file_extension = os.path.splitext(file_name_with_ext)
+
+        # Génération du slug sans l'extension du fichier
+        slug = file_name.replace(" ", "-").lower()
+
+        # Supprimer les caractères non autorisés dans le slug
+        slug = re.sub(r'[^a-z0-9_-]', '', slug)
+
+        # Vérification que le slug commence par un caractère alphanumérique ou un underscore
+        if not re.match(r'^[_a-zA-Z0-9]', slug):
+            slug = f"slug-{slug}"
+
+        headers = {
+            "Authorization": f"Bearer {WEBFLOW_API_TOKEN}",
+            "Content-Type": "application/json"
+        }
+
+        # Création de l'item live dans la collection
+        try:
+            response = requests.post(
+                f"https://api.webflow.com/v2/collections/{MEMOIRE_TECHNIQUE_GENERATED_COLLECTION_ID}/items/live",
+                headers=headers,
+                json={
+                    "isArchived": False,
+                    "isDraft": False,
+                    "fieldData": {
+                        "name": file_name_with_ext,
+                        "slug": slug,
+                        "user-id": user_id,
+                        "pdf-2": asset_url
+                    }
+                },
+                timeout=15
+            )
+        except requests.RequestException as e:
+            raise ConnectionError(f"Erreur lors de la connexion à l'API Webflow : {e}")
+
+        # Vérification de la réponse pour la création de l'item
+        if response.status_code in [200, 201, 202]:
+            print("L'entrée a été ajoutée avec succès à la collection en mode live.")
+            return True
+        else:
+            try:
+                error_details = response.json()
+            except ValueError:
+                error_details = response.text  # Fallback si le JSON est mal formé
+            raise RuntimeError(f"Erreur lors de la création de l'entrée : {error_details}")
+
+    except (FileNotFoundError, ValueError, ConnectionError, RuntimeError) as e:
+        print(f"Erreur dans send_pdf_file : {e}")
         return False
-
-    # Création de l'asset et récupération de son URL
-    asset_url = create_asset(output_pdf_file)
-    if not asset_url:
-        return False
-
-    # Nom du fichier pour l'item
-    file_name_with_ext = os.path.basename(output_pdf_file)
-    file_name, file_extension = os.path.splitext(file_name_with_ext)
-    
-    # Génération du slug sans l'extension du fichier
-    slug = file_name.replace(" ", "-").lower()
-    
-    # Supprimer les caractères non autorisés dans le slug
-    slug = re.sub(r'[^a-z0-9_-]', '', slug)
-    
-    # Vérification que le slug commence par un caractère alphanumérique ou un underscore
-    if not re.match(r'^[_a-zA-Z0-9]', slug):
-        slug = f"slug-{slug}"
-
-    headers = {
-        "Authorization": f"Bearer {WEBFLOW_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    # Création de l'item live dans la collection
-    response = requests.post(
-        f"https://api.webflow.com/v2/collections/{MEMOIRE_TECHNIQUE_GENERATED_COLLECTION_ID}/items/live",
-        headers=headers,
-        json={
-            "isArchived": False,
-            "isDraft": False,
-            "fieldData": {
-                "name": file_name_with_ext,  # Conserver l'extension dans le nom
-                "slug": slug,
-                "user-id": user_id,
-                "pdf-2": asset_url
-            }
-        },
-    )
-
-    # Vérification de la réponse pour la création de l'item
-    if response.status_code in [200, 201, 202]:
-        print("L'entrée a été ajoutée avec succès à la collection en mode live.")
-        return True
-    else:
-        print(f"Erreur lors de la création de l'entrée dans la collection : {response.json()}")
+    except Exception as e:
+        print(f"Erreur inattendue dans send_pdf_file : {e}")
         return False
