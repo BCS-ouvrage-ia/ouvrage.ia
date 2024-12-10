@@ -8,7 +8,7 @@ import requests
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from utils import (
-    allowed_file, 
+    generate_slug, 
     get_user_data_from_webflow, 
     get_thread_id, 
     save_thread_id,
@@ -52,6 +52,10 @@ THREAD_ID_ANALYSE_DOSSIER_FILE = 'thread_ids_dossier.json'
 # Clés API
 openai.api_key = os.getenv('OPENAI_API_KEY')
 BEARER_TOKEN = "61735865-8b6d-4cf4-8ceb-cb4a3901c357"
+
+DOSSIER_CONSULTATION_COLLECTION_ID = os.getenv("DOSSIER_CONSULTATION_COLLECTION_ID")
+WEBFLOW_API_TOKEN = os.getenv("WEBFLOW_API_TOKEN")
+
 
 @app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
@@ -98,12 +102,33 @@ def generer_memoire_technique():
     file_path = os.path.join(CONSULT_FOLDER, filename)
     download_from_asset_id(file_id, file_path)
 
+    # Envoyer dossier consultation dans Webflow
+    webflow_url = f"https://api.webflow.com/v2/collections/{DOSSIER_CONSULTATION_COLLECTION_ID}/items/live"
+    headers = {
+        "Authorization": f"Bearer {WEBFLOW_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "fieldData": {
+            "user-id": user_id,
+            "asset_id": file_id,
+            "name": filename,
+            "slug": generate_slug(filename)
+        }
+    }
+
+    try:
+        response = requests.post(webflow_url, headers=headers, json=data)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        return jsonify({'status': 'error', 'message': 'Erreur lors de l\'envoi du dossier de consultation à l\'API Webflow', 'details': str(e)}), 500
+
     # Chemin du fichier memoire technique
     memoire_filename = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique.pdf"
     memoire_file_path = os.path.join(MEMOIRES_FOLDER, memoire_filename)
 
     # test asset_id
-    asset_id = "80f58944-8cd0-447d-b324-24b310bf99ae"
+    # asset_id = "80f58944-8cd0-447d-b324-24b310bf99ae"
 
     # Enregistrer memoire technique
     download_from_asset_id(asset_id, memoire_file_path)

@@ -237,3 +237,8 @@ def send_pdf_file(output_pdf_file, user_id):
     except Exception as e:
         print(f"Erreur inattendue dans send_pdf_file : {e}")
         return False
+
+
+def generate_slug(filename):
+    """Génère un slug valide à partir d'un nom de fichier"""
+    return re.sub(r'[^a-zA-Z0-9-]', '-', filename.lower()).strip('-')
