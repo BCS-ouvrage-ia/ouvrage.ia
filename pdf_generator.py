@@ -170,19 +170,53 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
 
                 wrapped_text_lines = wrap_text(c, str(cleaned_text), width)
                 line_height = 20
-                truncated_lines = max_height(wrapped_text_lines, line_height, height)
+                # Si c'est le planning, on autorise le report sur la page suivante
+                if item.get('text') == 'planning':
+                    # On va écrire autant de lignes que possible dans la zone (width, height) de la page actuelle.
+                    # Si on dépasse, on passe à la page suivante et on continue.
+                    available_height = height
+                    for line in wrapped_text_lines:
+                        # Si on ne rentre plus sur cette page, on passe à la suivante
+                        if available_height < line_height:
+                            # On passe à la page suivante
+                            c.showPage()
+                            # On réinitialise les paramètres de page pour la page suivante
+                            c.setFont(font_name, size)
+                            c.setFillColor(color)
+                            # On réinitialise la position y pour la nouvelle page
+                            # Vous pouvez ajuster ce point de départ sur la seconde page
+                            # Par exemple, la même hauteur que précédemment
+                            available_height = height
+                            y = page_height - item.get('y')
 
-                for line in truncated_lines:
-                    if line == '':
+                        if line == '':
+                            y -= line_height
+                            available_height -= line_height
+                            continue
+
+                        if alignment == 'center':
+                            c.drawCentredString(x + width / 2, y, line)
+                        elif alignment == 'right':
+                            c.drawRightString(x + width, y, line)
+                        else:
+                            c.drawString(x, y, line)
+
                         y -= line_height
-                        continue
-                    if alignment == 'center':
-                        c.drawCentredString(x + width / 2, y, line)
-                    elif alignment == 'right':
-                        c.drawRightString(x + width, y, line)
-                    else:
-                        c.drawString(x, y, line)
-                    y -= int(line_height)
+                        available_height -= line_height
+                else:
+                    truncated_lines = max_height(wrapped_text_lines, line_height, height)
+
+                    for line in truncated_lines:
+                        if line == '':
+                            y -= line_height
+                            continue
+                        if alignment == 'center':
+                            c.drawCentredString(x + width / 2, y, line)
+                        elif alignment == 'right':
+                            c.drawRightString(x + width, y, line)
+                        else:
+                            c.drawString(x, y, line)
+                        y -= int(line_height)
 
         # Organigramme page 12 (index 11)
         if page_num == 11:
