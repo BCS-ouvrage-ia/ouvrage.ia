@@ -82,6 +82,26 @@
         "color": "#000000"
     },
     {
+        "text": "code postal",
+        "x": 320,
+        "y": 250,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "3",
+        "color": "#000000"
+    },
+    {
+        "text": "ville",
+        "x": 363,
+        "y": 250,
+        "width": 200,
+        "height": 21,
+        "alignment": "left",
+        "pages": "3",
+        "color": "#000000"
+    },
+    {
         "text": "numero_siren",
         "x": 320,
         "y": 356,
@@ -130,7 +150,7 @@
         "color": "#000000"
     },
     {
-        "text": "conformité",
+        "text": "conformite",
         "x": 45,
         "y": 430,
         "width": 900,

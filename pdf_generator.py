@@ -47,6 +47,9 @@ def max_height(wrapped_lines, line_height, max_paragraph_height):
     Tronque les lignes pour qu'elles ne dépassent pas la hauteur maximale spécifiée,
     et s'arrête au dernier saut de ligne (\n) inclus dans la zone valide.
     
+    Si la dernière ligne tronquée se termine par ":", ou si elle est vide (saut de ligne explicite),
+    on coupe la liste des lignes pour exclure cette ligne.
+    
     :param wrapped_lines: Liste des lignes wrapées du paragraphe
     :param line_height: Hauteur d'une ligne (en points)
     :param max_paragraph_height: Hauteur maximale du paragraphe (en points)
@@ -65,13 +68,21 @@ def max_height(wrapped_lines, line_height, max_paragraph_height):
         if total_height > max_paragraph_height:
             break
 
-    # Si on dépasse, on coupe au dernier saut de ligne ou bien à la limite des lignes incluses
+    # Si la hauteur est dépassée, couper les lignes
     if total_height > max_paragraph_height:
         if last_newline_index != -1:
-            return wrapped_lines[:last_newline_index + 1]
+            # Couper au dernier saut de ligne explicite
+            truncated_lines = wrapped_lines[:last_newline_index + 1]
         else:
             max_lines = int(max_paragraph_height // line_height)
-            return wrapped_lines[:max_lines]
+            truncated_lines = wrapped_lines[:max_lines]
+    else:
+        # Si la hauteur n'a pas été dépassée, on garde toutes les lignes
+        truncated_lines = wrapped_lines
+
+    # ⚠️ Nouvelle règle : Si la dernière ligne se termine par ":" ou est vide, on la supprime
+    if truncated_lines and (truncated_lines[-1] == '' or truncated_lines[-1].strip().endswith(':')):
+        truncated_lines = truncated_lines[:-1]
 
     return wrapped_lines  # Retourner tout si ça ne dépasse pas
 
