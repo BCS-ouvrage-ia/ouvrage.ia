@@ -111,7 +111,7 @@ def generer_memoire_technique():
     data = {
         "fieldData": {
             "user-id": user_id,
-            "asset_id": file_id,
+            "asset-id": file_id,
             "name": filename,
             "slug": generate_slug(filename)
         }
