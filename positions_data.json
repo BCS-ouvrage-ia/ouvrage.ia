@@ -84,7 +84,7 @@
     {
         "text": "code postal",
         "x": 320,
-        "y": 250,
+        "y": 298,
         "width": 200,
         "height": 21,
         "alignment": "left",
@@ -94,7 +94,7 @@
     {
         "text": "ville",
         "x": 363,
-        "y": 250,
+        "y": 298,
         "width": 200,
         "height": 21,
         "alignment": "left",
@@ -145,16 +145,6 @@
         "y": 205,
         "width": 900,
         "height": 200,
-        "alignment": "left",
-        "pages": "6",
-        "color": "#000000"
-    },
-    {
-        "text": "conformite",
-        "x": 45,
-        "y": 430,
-        "width": 900,
-        "height": 150,
         "alignment": "left",
         "pages": "6",
         "color": "#000000"

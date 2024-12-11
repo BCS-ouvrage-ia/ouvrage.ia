@@ -63,7 +63,8 @@ def remove_reference_pattern(text):
 def place_images_vertically_on_page(c, images, page_width, page_height):
     """
     Place les images verticalement, 3 images par page.
-    Chaque image est redimensionnée pour tenir en hauteur dans le tiers de la page.
+    Chaque image est redimensionnée proportionnellement pour tenir dans le
+    tiers de la page, sans rogner ni distordre.
     """
     if not images:
         return
@@ -77,18 +78,23 @@ def place_images_vertically_on_page(c, images, page_width, page_height):
     for img_path in images:
         with Image.open(img_path) as image:
             img_width, img_height = image.size
-            # Ajustement à la hauteur
-            height_ratio = max_img_height / float(img_height)
-            new_height = img_height * height_ratio
-            new_width = img_width * height_ratio
 
-            if new_width > usable_width:
-                width_ratio = usable_width / new_width
-                new_width *= width_ratio
-                new_height *= width_ratio
+            # Calculer les ratios de redimensionnement en fonction de la largeur et de la hauteur
+            # Le ratio choisi sera le plus petit pour préserver les proportions
+            ratio_w = usable_width / float(img_width)
+            ratio_h = max_img_height / float(img_height)
+            scale_ratio = min(ratio_w, ratio_h)
 
+            # Appliquer le ratio de redimensionnement unique
+            new_width = img_width * scale_ratio
+            new_height = img_height * scale_ratio
+
+            # Centrer l'image horizontalement
             x_position = (page_width - new_width) / 2.0
-            c.drawImage(ImageReader(img_path), x_position, y_position - new_height, width=new_width, height=new_height)
+
+            # Dessiner l'image sur la page
+            c.drawImage(ImageReader(img_path), x_position, y_position - new_height, 
+                        width=new_width, height=new_height)
             y_position = y_position - new_height - inch
 
 
@@ -116,26 +122,20 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     extraire_images(memoire_file_path, image_folder)
     traiter_images(image_folder)
 
-    # Supposez que vous avez déjà 12 images au total (ou plus), dont 6 pour pages 15-16 et 6 pour pages 24-25
-    # Ici, en exemple, nous allons chercher 12 images depuis un dossier spécifique.
-    # Adaptez selon votre logique (dossier source, sélection d'images, etc.)
-    moe_folder = os.path.join(image_folder, 'machine_outil_engins')  # Exemple de dossier
+    # Exemple : Sélection d'images
+    moe_folder = os.path.join(image_folder, 'machine_outil_engins')
     all_images = [os.path.join(moe_folder, f) for f in os.listdir(moe_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-    # On suppose qu'on a au moins 12 images, sinon gérer les cas d'erreur
-    # 6 premières images pour les pages 15 et 16
+    # On suppose qu'on a au moins 12 images
+    # 6 premières images (pages 15-16)
     first_6_images = all_images[0:6]
-    # 3 images pour la page 15 (index 14)
-    first_3_page_15 = first_6_images[0:3]
-    # 3 images pour la page 16 (index 15)
-    next_3_page_16 = first_6_images[3:6]
+    first_3_page_15 = first_6_images[0:3]  # Page 15 (index 14)
+    next_3_page_16 = first_6_images[3:6]   # Page 16 (index 15)
 
-    # 6 autres images pour les pages 24 et 25
+    # 6 autres images (pages 24-25)
     second_6_images = all_images[6:12]
-    # 3 images pour la page 24 (index 23)
-    first_3_page_24 = second_6_images[0:3]
-    # 3 images pour la page 25 (index 24)
-    next_3_page_25 = second_6_images[3:6]
+    first_3_page_24 = second_6_images[0:3]  # Page 24 (index 23)
+    next_3_page_25 = second_6_images[3:6]   # Page 25 (index 24)
 
     for page_num in range(num_pages):
         items = pages_content.get(page_num, [])
@@ -170,22 +170,14 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
 
                 wrapped_text_lines = wrap_text(c, str(cleaned_text), width)
                 line_height = 20
-                # Si c'est le planning, on autorise le report sur la page suivante
                 if item.get('text') == 'planning':
-                    # On va écrire autant de lignes que possible dans la zone (width, height) de la page actuelle.
-                    # Si on dépasse, on passe à la page suivante et on continue.
+                    # Gestion du flux sur plusieurs pages si nécessaire
                     available_height = height
                     for line in wrapped_text_lines:
-                        # Si on ne rentre plus sur cette page, on passe à la suivante
                         if available_height < line_height:
-                            # On passe à la page suivante
                             c.showPage()
-                            # On réinitialise les paramètres de page pour la page suivante
                             c.setFont(font_name, size)
                             c.setFillColor(color)
-                            # On réinitialise la position y pour la nouvelle page
-                            # Vous pouvez ajuster ce point de départ sur la seconde page
-                            # Par exemple, la même hauteur que précédemment
                             available_height = height
                             y = page_height - item.get('y')
 
@@ -205,7 +197,6 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                         available_height -= line_height
                 else:
                     truncated_lines = max_height(wrapped_text_lines, line_height, height)
-
                     for line in truncated_lines:
                         if line == '':
                             y -= line_height
@@ -218,7 +209,7 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                             c.drawString(x, y, line)
                         y -= int(line_height)
 
-        # Organigramme page 12 (index 11)
+        # Ajout de l'organigramme page 12 (index 11)
         if page_num == 11:
             try:
                 image_width = 520
@@ -233,13 +224,13 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
             except Exception as e:
                 print(f"Erreur inattendue lors de l'ajout de l'image : {e}")
 
-        # Pages 15 et 16 (indexes 14 et 15) : répartition des 6 premières images
+        # Pages 15 (index 14) et 16 (index 15)
         if page_num == 14:  # Page 15
             place_images_vertically_on_page(c, first_3_page_15, page_width, page_height)
         if page_num == 15:  # Page 16
             place_images_vertically_on_page(c, next_3_page_16, page_width, page_height)
 
-        # Pages 24 et 25 (indexes 23 et 24) : répartition des 6 autres images
+        # Pages 24 (index 23) et 25 (index 24)
         if page_num == 23:  # Page 24
             place_images_vertically_on_page(c, first_3_page_24, page_width, page_height)
         if page_num == 24:  # Page 25
@@ -260,5 +251,3 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
 
     PdfWriter().write(output_path, template_pdf)
     os.remove(temp_pdf_path)
-
-
