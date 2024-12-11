@@ -2,7 +2,7 @@
 
 import re
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.colors import HexColor
 from reportlab.lib.units import inch
 from reportlab.lib.utils import ImageReader
@@ -63,14 +63,17 @@ def remove_reference_pattern(text):
 def place_images_vertically_on_page(c, images, page_width, page_height):
     """
     Place les images verticalement, 3 images par page.
-    Chaque image est redimensionnée proportionnellement pour tenir dans le
-    tiers de la page, sans rogner ni distordre.
+    Chaque image est redimensionnée proportionnellement pour tenir dans la zone définie.
+    Utilisation de preserveAspectRatio=True pour conserver le ratio.
     """
     if not images:
         return
     num_images = len(images)
     images_per_page = 3
-    max_img_height = page_height / images_per_page
+
+    # On réduit ici l'espace vertical maximal par image afin d'éviter le chevauchement
+    # Ajout de marge supplémentaire sur la page
+    max_img_height = (page_height - 4 * inch) / images_per_page
     horizontal_margin = inch
     usable_width = page_width - (2 * horizontal_margin)
     y_position = page_height - inch
@@ -79,24 +82,29 @@ def place_images_vertically_on_page(c, images, page_width, page_height):
         with Image.open(img_path) as image:
             img_width, img_height = image.size
 
-            # Calculer les ratios de redimensionnement en fonction de la largeur et de la hauteur
-            # Le ratio choisi sera le plus petit pour préserver les proportions
+            # Calcul du ratio
             ratio_w = usable_width / float(img_width)
             ratio_h = max_img_height / float(img_height)
             scale_ratio = min(ratio_w, ratio_h)
 
-            # Appliquer le ratio de redimensionnement unique
             new_width = img_width * scale_ratio
             new_height = img_height * scale_ratio
 
-            # Centrer l'image horizontalement
             x_position = (page_width - new_width) / 2.0
 
-            # Dessiner l'image sur la page
-            c.drawImage(ImageReader(img_path), x_position, y_position - new_height, 
-                        width=new_width, height=new_height)
-            y_position = y_position - new_height - inch
+            # Utilisation de preserveAspectRatio et anchor pour maintenir les proportions
+            c.drawImage(
+                ImageReader(img_path),
+                x_position,
+                y_position - new_height,
+                width=new_width,
+                height=new_height,
+                preserveAspectRatio=True,
+                anchor='c'
+            )
 
+            # Déplacement du point de dessin pour l'image suivante
+            y_position = y_position - new_height - inch
 
 def generate_pdf(template_path, output_path, positions_data, variables, memoire_file_path):
     positions_data = replace_newlines_in_text(positions_data)
@@ -105,8 +113,8 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     num_pages = len(template_pdf.pages)
 
     temp_pdf_path = 'temp_overlay.pdf'
-    c = canvas.Canvas(temp_pdf_path, pagesize=letter)
-
+    # Modification 1 : utilisation d'A4 pour le canvas et les dimensions
+    c = canvas.Canvas(temp_pdf_path, pagesize=A4)
     page_width, page_height = A4
 
     pages_content = {}
@@ -122,17 +130,14 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     extraire_images(memoire_file_path, image_folder)
     traiter_images(image_folder)
 
-    # Exemple : Sélection d'images
     moe_folder = os.path.join(image_folder, 'machine_outil_engins')
     all_images = [os.path.join(moe_folder, f) for f in os.listdir(moe_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
     # On suppose qu'on a au moins 12 images
-    # 6 premières images (pages 15-16)
     first_6_images = all_images[0:6]
     first_3_page_15 = first_6_images[0:3]  # Page 15 (index 14)
     next_3_page_16 = first_6_images[3:6]   # Page 16 (index 15)
 
-    # 6 autres images (pages 24-25)
     second_6_images = all_images[6:12]
     first_3_page_24 = second_6_images[0:3]  # Page 24 (index 23)
     next_3_page_25 = second_6_images[3:6]   # Page 25 (index 24)
@@ -166,12 +171,13 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                 c.setFont(font_name, size)
                 c.setFillColor(color)
 
+                # Conversion pour alignement vertical sur page A4
                 y = page_height - y
 
                 wrapped_text_lines = wrap_text(c, str(cleaned_text), width)
                 line_height = 20
                 if item.get('text') == 'planning':
-                    # Gestion du flux sur plusieurs pages si nécessaire
+                    # Gestion multi-pages
                     available_height = height
                     for line in wrapped_text_lines:
                         if available_height < line_height:
@@ -209,14 +215,14 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                             c.drawString(x, y, line)
                         y -= int(line_height)
 
-        # Ajout de l'organigramme page 12 (index 11)
+        # Organigramme page 12 (index 11)
         if page_num == 11:
             try:
                 image_width = 520
                 image_height = 400
                 image_x = (page_width - image_width) / 2
                 image_y = (page_height - image_height) / 2
-                c.drawImage('organigramme.png', image_x, image_y, image_width, image_height)
+                c.drawImage('organigramme.png', image_x, image_y, image_width, image_height, preserveAspectRatio=True, anchor='c')
             except FileNotFoundError:
                 print("Erreur : Le fichier 'organigramme.png' n'a pas été trouvé.")
             except OSError as e:
@@ -251,3 +257,4 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
 
     PdfWriter().write(output_path, template_pdf)
     os.remove(temp_pdf_path)
+
