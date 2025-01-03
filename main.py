@@ -27,6 +27,18 @@ from download_file import download_from_asset_id
 from pdf_generator import generate_pdf
 from organigramme import generer_organigramme
 from import_img import supprimer_images
+import logging
+
+# Configuration du logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Niveau de log minimum
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("app.log"),  # Sauvegarde les logs dans un fichier
+        logging.StreamHandler()  # Affiche les logs dans la console
+    ]
+)
+
 
 # Si local
 load_dotenv()
@@ -139,16 +151,36 @@ def generer_memoire_technique():
     try:
         # Upload du fichier dossier de consultation à OpenAI
         consultation_file_id = upload_file_to_openai(file_path, 'dossier-consultation.pdf', purpose='assistants')
-        print(consultation_file_id)
+        logging.info(f"consultation_file_id obtenu : {consultation_file_id}")
 
         # Upload du fichier mémoire technique à OpenAI
         memoire_file_id = upload_file_to_openai(memoire_file_path, 'memoire-technique.pdf', purpose='assistants')
-        print(memoire_file_id)
+        logging.info(f"memoire_file_id obtenu : {memoire_file_id}")
 
+        """
         # Ajout des fichiers au vector store
         add_file_to_vector_store(VECTOR_STORE_ID_ANALYSE_DOSSIER, consultation_file_id)
         add_file_to_vector_store(VECTOR_STORE_ID, consultation_file_id)
         add_file_to_vector_store(VECTOR_STORE_ID, memoire_file_id)
+        """
+        try:
+            response1 = add_file_to_vector_store(VECTOR_STORE_ID_ANALYSE_DOSSIER, consultation_file_id)
+            logging.info(f"Ajout consultation_file_id au VECTOR_STORE_ID_ANALYSE_DOSSIER réussi : {response1}")
+        except Exception as e:
+            logging.error(f"Erreur lors de l'ajout de consultation_file_id au VECTOR_STORE_ID_ANALYSE_DOSSIER : {e}")
+
+        try:
+            response2 = add_file_to_vector_store(VECTOR_STORE_ID, consultation_file_id)
+            logging.info(f"Ajout consultation_file_id au VECTOR_STORE_ID réussi : {response2}")
+        except Exception as e:
+            logging.error(f"Erreur lors de l'ajout de consultation_file_id au VECTOR_STORE_ID : {e}")
+
+        try:
+            response3 = add_file_to_vector_store(VECTOR_STORE_ID, memoire_file_id)
+            logging.info(f"Ajout memoire_file_id au VECTOR_STORE_ID réussi : {response3}")
+        except Exception as e:
+            logging.error(f"Erreur lors de l'ajout de memoire_file_id au VECTOR_STORE_ID : {e}")
+
 
         # Récupérer ou créer le thread_id pour le traitement du dossier de consultation
         thread_id_dossier = get_thread_id(nom_entreprise, THREAD_ID_ANALYSE_DOSSIER_FILE)
