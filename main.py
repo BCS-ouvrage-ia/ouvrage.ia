@@ -31,7 +31,7 @@ import logging
 
 # Configuration du logger
 logging.basicConfig(
-    level=logging.DEBUG,  # Niveau de log minimum
+    level=logging.INFO,  # Niveau de log
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler("app.log"),  # Sauvegarde les logs dans un fichier

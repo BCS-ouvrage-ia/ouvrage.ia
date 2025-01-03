@@ -21,6 +21,23 @@ class PersonExtraction(BaseModel):
 class TeamExtraction(BaseModel):
     team: List[PersonExtraction]
 
+def wait_for_file_upload(file_id, max_retries=30, delay=2):
+    """
+    Vérifie régulièrement le statut d'un fichier dans l'API OpenAI.
+    Renvoie True si le fichier est uploadé ou traité, False sinon après max_retries.
+    """
+    for _ in range(max_retries):
+        file_info = openai.File.retrieve(file_id)
+        status = file_info.get('status', None)
+        
+        if status in ('uploaded', 'processed'):
+            return True
+        
+        time.sleep(delay)
+    
+    return False
+
+
 def upload_file_to_openai(file_path, file_path_openai, purpose='assistants'):
     # Renommer le fichier en `file_path_openai`
     os.rename(file_path, file_path_openai)
@@ -34,6 +51,12 @@ def upload_file_to_openai(file_path, file_path_openai, purpose='assistants'):
             )
         file_id = response.id
         print("fichier envoyé")
+
+        # Attendre que l'API confirme l'upload/processing
+        if wait_for_file_upload(file_id):
+            print("Le fichier a bien été importé dans OpenAI.")
+        else:
+            print("Le fichier n'a pas pu être confirmé comme importé après le délai imparti.")
 
     finally:
         # Renommer le fichier à son nom original `file_path` après l'envoi
