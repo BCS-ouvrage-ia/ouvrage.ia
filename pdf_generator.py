@@ -144,11 +144,16 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
             print(f"Erreur lors du traitement des images : {e}")
 
         moe_folder = os.path.join(image_folder, 'machine_outil_engins')
-        all_images = [
-            os.path.join(moe_folder, f)
-            for f in os.listdir(moe_folder)
-            if f.lower().endswith(('.png', '.jpg', '.jpeg'))
-        ]
+        if os.path.exists(moe_folder):
+            all_images = [
+                os.path.join(moe_folder, f)
+                for f in os.listdir(moe_folder)
+                if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+            ]
+        else:
+            print(f"Dossier d'images manquant : {moe_folder}")
+            all_images = []
+        
     except Exception as e:
         print(f"Erreur critique dans le traitement des images : {e}")
         all_images = []
