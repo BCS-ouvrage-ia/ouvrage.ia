@@ -139,9 +139,11 @@ def generer_memoire_technique():
     try:
         # Upload du fichier dossier de consultation à OpenAI
         consultation_file_id = upload_file_to_openai(file_path, 'dossier-consultation.pdf', purpose='assistants')
+        print(consultation_file_id)
 
         # Upload du fichier mémoire technique à OpenAI
         memoire_file_id = upload_file_to_openai(memoire_file_path, 'memoire-technique.pdf', purpose='assistants')
+        print(memoire_file_id)
 
         # Ajout des fichiers au vector store
         add_file_to_vector_store(VECTOR_STORE_ID_ANALYSE_DOSSIER, consultation_file_id)
