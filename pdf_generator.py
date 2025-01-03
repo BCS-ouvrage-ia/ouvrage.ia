@@ -79,32 +79,37 @@ def place_images_vertically_on_page(c, images, page_width, page_height):
     y_position = page_height - inch
 
     for img_path in images:
-        with Image.open(img_path) as image:
-            img_width, img_height = image.size
+        try:
+            with Image.open(img_path) as image:
+                img_width, img_height = image.size
 
-            # Calcul du ratio
-            ratio_w = usable_width / float(img_width)
-            ratio_h = max_img_height / float(img_height)
-            scale_ratio = min(ratio_w, ratio_h)
+                # Calcul du ratio
+                ratio_w = usable_width / float(img_width)
+                ratio_h = max_img_height / float(img_height)
+                scale_ratio = min(ratio_w, ratio_h)
 
-            new_width = img_width * scale_ratio
-            new_height = img_height * scale_ratio
+                new_width = img_width * scale_ratio
+                new_height = img_height * scale_ratio
 
-            x_position = (page_width - new_width) / 2.0
+                x_position = (page_width - new_width) / 2.0
 
-            # Utilisation de preserveAspectRatio et anchor pour maintenir les proportions
-            c.drawImage(
-                ImageReader(img_path),
-                x_position,
-                y_position - new_height,
-                width=new_width,
-                height=new_height,
-                preserveAspectRatio=True,
-                anchor='c'
-            )
+                # Utilisation de preserveAspectRatio et anchor pour maintenir les proportions
+                c.drawImage(
+                    ImageReader(img_path),
+                    x_position,
+                    y_position - new_height,
+                    width=new_width,
+                    height=new_height,
+                    preserveAspectRatio=True,
+                    anchor='c'
+                )
 
-            # Déplacement du point de dessin pour l'image suivante
-            y_position = y_position - new_height - inch
+                # Déplacement du point de dessin pour l'image suivante
+                y_position = y_position - new_height - inch
+
+        except Exception as e:
+            print(f"Erreur lors du traitement de l'image {img_path} : {e}")
+            continue
 
 def generate_pdf(template_path, output_path, positions_data, variables, memoire_file_path):
     positions_data = replace_newlines_in_text(positions_data)
@@ -113,7 +118,6 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     num_pages = len(template_pdf.pages)
 
     temp_pdf_path = 'temp_overlay.pdf'
-    # Modification 1 : utilisation d'A4 pour le canvas et les dimensions
     c = canvas.Canvas(temp_pdf_path, pagesize=A4)
     page_width, page_height = A4
 
@@ -127,12 +131,28 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     image_folder = 'images-memoire-technique-temp'
 
     # Extraction et traitement des images
-    extraire_images(memoire_file_path, image_folder)
-    traiter_images(image_folder)
+    try:
+        # Extraction et traitement des images avec gestion des erreurs
+        try:
+            extraire_images(memoire_file_path, image_folder)
+        except Exception as e:
+            print(f"Erreur lors de l'extraction des images : {e}")
 
-    moe_folder = os.path.join(image_folder, 'machine_outil_engins')
-    all_images = [os.path.join(moe_folder, f) for f in os.listdir(moe_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        try:
+            traiter_images(image_folder)
+        except Exception as e:
+            print(f"Erreur lors du traitement des images : {e}")
 
+        moe_folder = os.path.join(image_folder, 'machine_outil_engins')
+        all_images = [
+            os.path.join(moe_folder, f)
+            for f in os.listdir(moe_folder)
+            if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+        ]
+    except Exception as e:
+        print(f"Erreur critique dans le traitement des images : {e}")
+        all_images = []
+        
     # On suppose qu'on a au moins 12 images
     first_6_images = all_images[0:6]
     first_3_page_15 = first_6_images[0:3]  # Page 15 (index 14)
