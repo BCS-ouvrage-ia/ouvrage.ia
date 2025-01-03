@@ -132,24 +132,9 @@ def generer_memoire_technique():
 
     # Enregistrer memoire technique
     download_from_asset_id(asset_id, memoire_file_path)
-    '''
-    try:
-    # Requête pour télécharger le fichier PDF
-        response = requests.get(url, stream=True)
-        response.raise_for_status()  # Vérifie si la requête a réussi
-        
-        # Téléchargement et écriture du fichier en chunks pour éviter la surcharge de mémoire
-        with open(memoire_file_path, 'wb') as pdf_file:
-            for chunk in response.iter_content(chunk_size=8192):
-                pdf_file.write(chunk)
-        
-    except requests.exceptions.RequestException as e:
-        print(f"Erreur lors du téléchargement du fichier : {e}")
-        return None
 
     if not os.path.exists(memoire_file_path):
         return jsonify({'status': 'error', 'message': f'Le fichier memoire technique associé est introuvable : {memoire_file_path}'}), 400
-    '''
 
     try:
         # Upload du fichier dossier de consultation à OpenAI
