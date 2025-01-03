@@ -7,7 +7,6 @@ import time
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-import asyncio
 
 load_dotenv()
 
@@ -55,21 +54,16 @@ def create_thread():
     return response.id
 
 
-async def run_assistant_interaction(assistant_id, message_content, thread_id):
-    """
-    Exécute une interaction avec OpenAI de manière asynchrone.
-    """
+def run_assistant_interaction(assistant_id, message_content, thread_id):
     # Créer un message dans le thread existant
-    thread_message = await asyncio.to_thread(
-        openai.beta.threads.messages.create,
+    thread_message = openai.beta.threads.messages.create(
         thread_id,
         role="user",
-        content=message_content
+        content=message_content,
     )
 
     # Créer un run
-    run = await asyncio.to_thread(
-        openai.beta.threads.runs.create,
+    run = openai.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id
     )
@@ -79,8 +73,7 @@ async def run_assistant_interaction(assistant_id, message_content, thread_id):
 
     # Récupérer le run jusqu'à ce que le statut soit "completed"
     while True:
-        run_info = await asyncio.to_thread(
-            openai.beta.threads.runs.retrieve,
+        run_info = openai.beta.threads.runs.retrieve(
             thread_id=thread_id,
             run_id=run_id
         )
@@ -90,19 +83,17 @@ async def run_assistant_interaction(assistant_id, message_content, thread_id):
         elif status == 'failed':
             raise Exception('Le run a échoué')
         else:
-            await asyncio.sleep(1)  # Attendre avant de vérifier à nouveau
+            time.sleep(1)  # Attendre avant de vérifier à nouveau
 
     print("etape post retrieve run")
 
     # Extraire la réponse de l'assistant
-    thread_messages = await asyncio.to_thread(
-        openai.beta.threads.messages.list,
-        thread_id
-    )
+    thread_messages = openai.beta.threads.messages.list(thread_id)
     messages = thread_messages.data
     assistant_response = ''
 
     print("etape post reponse assistant")
+
 
     # Parcourir les messages pour trouver la réponse de l'assistant
     for message in messages:
@@ -117,28 +108,24 @@ async def run_assistant_interaction(assistant_id, message_content, thread_id):
     return assistant_response
 
 
-async def delete_file_in_openai(file_id):
-    """
-    Supprime un fichier dans OpenAI de manière asynchrone.
-    """
-    response = await asyncio.to_thread(openai.files.delete, file_id=file_id)
+def delete_file_in_openai(file_id):
+    response = openai.files.delete(
+        file_id = file_id
+    )
+
     return response
 
 
-
-async def create_and_run_thread(assistant_id, messages):
-    """
-    Crée et exécute un thread OpenAI de manière asynchrone.
-    """
-    response = await asyncio.to_thread(
-        openai.beta.threads.create_and_run,
+def create_and_run_thread(assistant_id, messages):
+    response = openai.beta.threads.create_and_run(
         assistant_id=assistant_id,
-        thread={"messages": messages}
+        thread={
+            "messages": messages
+        }
     )
     thread_id = response['id']
     run_id = response['latest_run']['id']
     return thread_id, run_id
-
 
 
 def retrieve_run(thread_id, run_id):
