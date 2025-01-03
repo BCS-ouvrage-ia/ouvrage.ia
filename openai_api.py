@@ -27,13 +27,13 @@ def wait_for_file_upload(file_id, max_retries=30, delay=2):
     Renvoie True si le fichier est uploadé ou traité, False sinon après max_retries.
     """
     for _ in range(max_retries):
-        file_info = openai.files.retrieve(file_id)
-        status = file_info.get('status', None)
-        
-        if status in ('uploaded', 'processed', "completed"):
+        try:
+            file_info = openai.files.retrieve(file_id)
+            # S'il n'y a pas d'erreur, le fichier est accessible
             return True
-        
-        time.sleep(delay)
+        except Exception as e:
+            # Erreur lors de la récupération, attendre avant de retenter
+            time.sleep(delay)
     
     return False
 
