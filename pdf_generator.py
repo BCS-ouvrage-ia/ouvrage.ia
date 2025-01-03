@@ -127,9 +127,10 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
         if page_num not in pages_content:
             pages_content[page_num] = []
         pages_content[page_num].append(item)
-
+    
     image_folder = 'images-memoire-technique-temp'
 
+    """
     # Extraction et traitement des images
     try:
         # Extraction et traitement des images avec gestion des erreurs
@@ -142,7 +143,7 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
             traiter_images(image_folder)
         except Exception as e:
             print(f"Erreur lors du traitement des images : {e}")
-
+        
         moe_folder = os.path.join(image_folder, 'machine_outil_engins')
         if os.path.exists(moe_folder):
             all_images = [
@@ -166,6 +167,8 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
     second_6_images = all_images[6:12]
     first_3_page_24 = second_6_images[0:3]  # Page 24 (index 23)
     next_3_page_25 = second_6_images[3:6]   # Page 25 (index 24)
+
+    """
 
     for page_num in range(num_pages):
         items = pages_content.get(page_num, [])
@@ -241,6 +244,7 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                         y -= int(line_height)
 
         # Organigramme page 12 (index 11)
+        '''
         if page_num == 11:
             try:
                 image_width = 520
@@ -253,7 +257,7 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
             except OSError as e:
                 print(f"Erreur lors du chargement de l'image : {e}")
             except Exception as e:
-                print(f"Erreur inattendue lors de l'ajout de l'image : {e}")
+                print(f"Erreur inattendue lors de l'ajout de l'image : {e}")       
 
         # Pages 15 (index 14) et 16 (index 15)
         if page_num == 14:  # Page 15
@@ -267,6 +271,7 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
         if page_num == 24:  # Page 25
             place_images_vertically_on_page(c, next_3_page_25, page_width, page_height)
 
+        '''
         c.showPage()
 
     c.save()

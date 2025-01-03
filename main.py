@@ -183,8 +183,8 @@ def generer_memoire_technique():
             response = run_assistant_interaction(ASSISTANT_ID, formatted_prompt, thread_id)
             assistant_responses[key] = response
 
-            if key == 'moyens_humains':
-                generer_organigramme(response)
+            #if key == 'moyens_humains':
+                #generer_organigramme(response)
 
             # Mise à jour des variables si nécessaire
             if key in ['nom_projet', 'infos_dossier_consultation', 'requis_dossier_consultation']:
