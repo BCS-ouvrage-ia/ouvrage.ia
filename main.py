@@ -70,34 +70,7 @@ DOSSIER_CONSULTATION_COLLECTION_ID = os.getenv("DOSSIER_CONSULTATION_COLLECTION_
 WEBFLOW_API_TOKEN = os.getenv("WEBFLOW_API_TOKEN")
 
 
-@app.route('/webhook/generer_memoire_technique', methods=['POST'])
-def generer_memoire_technique():
-    
-       # Vérifie le token Bearer dans l'en-tête Authorization
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or auth_header.split()[0] != 'Bearer' or auth_header.split()[1] != BEARER_TOKEN:
-        return jsonify({'status': 'error', 'message': 'Token Bearer invalide ou manquant'}), 403
-
-    # Récupère le User ID depuis la requête
-    user_id = request.json.get('user_id')
-
-    if not user_id:
-        return jsonify({'status': 'error', 'message': 'User ID manquant'}), 400
-
-    file_id = request.json.get('asset_id')
-
-    if not file_id:
-        return jsonify({'status': 'error', 'message': 'Asset ID manquant'}), 400
-
-    # Réponse immédiate au client
-    response = jsonify({'status': 'success', 'message': 'Asset ID reçu', 'asset_id': file_id})
-    
-    # Exécuter le traitement en arrière-plan
-    threading.Thread(target=process_asset, args=(user_id, file_id)).start()
-
-    return response, 200
-
-    def process_asset(user_id, file_id):
+def process_asset(user_id, file_id):
 
         # Récupère les données de l'utilisateur depuis Webflow
         user_data = get_user_data_from_webflow(user_id)
@@ -307,6 +280,34 @@ def generer_memoire_technique():
         except Exception as e:
             return jsonify({'status': 'error', 'message': f'Une erreur est survenue: {str(e)}'}), 500
 
+
+
+@app.route('/webhook/generer_memoire_technique', methods=['POST'])
+def generer_memoire_technique():
+    
+       # Vérifie le token Bearer dans l'en-tête Authorization
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or auth_header.split()[0] != 'Bearer' or auth_header.split()[1] != BEARER_TOKEN:
+        return jsonify({'status': 'error', 'message': 'Token Bearer invalide ou manquant'}), 403
+
+    # Récupère le User ID depuis la requête
+    user_id = request.json.get('user_id')
+
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'User ID manquant'}), 400
+
+    file_id = request.json.get('asset_id')
+
+    if not file_id:
+        return jsonify({'status': 'error', 'message': 'Asset ID manquant'}), 400
+
+    # Réponse immédiate au client
+    response = jsonify({'status': 'success', 'message': 'Asset ID reçu', 'asset_id': file_id})
+    
+    # Exécuter le traitement en arrière-plan
+    threading.Thread(target=process_asset, args=(user_id, file_id)).start()
+
+    return response, 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
