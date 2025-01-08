@@ -10,6 +10,7 @@ python-dotenv
 webflow
 graphviz
 pyuploadcare
+threading
 
 
 #!/bin/bash
