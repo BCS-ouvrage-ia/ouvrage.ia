@@ -180,11 +180,15 @@ def process_asset(user_id, file_id):
                 response = run_assistant_interaction(ASSISTANT_ID_ANALYSE_DOSSIER, prompt, thread_id_dossier)
                 assistant_responses_dossier[key] = response
 
+            print (f"Assistant reponses dossier : {assistant_responses_dossier}")
+
             # Récupérer ou créer le thread_id pour les prompts successifs
             thread_id = get_thread_id(nom_entreprise, THREAD_ID_FILE)
             if not thread_id:
                 thread_id = create_thread()
                 save_thread_id(nom_entreprise, thread_id, THREAD_ID_FILE)
+
+            print (f"Thread ID : {thread_id}")
 
             # Dictionnaire pour stocker les réponses et variables pour remplacer les placeholders
             assistant_responses = {}
