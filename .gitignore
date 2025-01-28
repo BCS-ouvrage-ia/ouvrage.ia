@@ -1,3 +1,7 @@
 uploadcare_api/
 post_item.py
 test_webhook.sh
+venv/
+.DS_Store
+__pycache__/
+test-openai-file.py

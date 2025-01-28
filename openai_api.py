@@ -7,6 +7,7 @@ import time
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -125,6 +126,8 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
             for part in content_parts:
                 if part.type == 'text':
                     text_value = part.text.value
+                    pattern = r'【\d+†source】'
+                    text_value = re.sub(pattern, '', text_value)
                     assistant_response += text_value
             break
 
