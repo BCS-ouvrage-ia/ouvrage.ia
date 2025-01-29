@@ -1,12 +1,42 @@
 [
     {
+        "text": "infos_dossier_consultation",
+        "x": 45,
+        "y": 160,
+        "width": 900,
+        "height": 100,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#000000"
+    },
+    {
+        "text": "requis_dossier_consultation",
+        "x": 45,
+        "y": 300,
+        "width": 900,
+        "height": 250,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#000000"
+    },
+    {
+        "text": "documents_a_fournir",
+        "x": 45,
+        "y": 573,
+        "width": 900,
+        "height": 230,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#000000"
+    },
+    {
         "text": "nom_projet",
         "x": 75,
         "y": 220,
         "width": 450,
         "height": 125,
         "alignment": "center",
-        "pages": "0",
+        "pages": "1",
         "color": "#000000",
         "size": 16,
         "fontBold": true
@@ -18,7 +48,7 @@
         "width": 200,
         "height": 25,
         "alignment": "left",
-        "pages": "0",
+        "pages": "1",
         "color": "#FFFFFF"
     },
     {
@@ -28,7 +58,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "0",
+        "pages": "1",
         "color": "#FFFFFF"
     },
     {
@@ -38,7 +68,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "0",
+        "pages": "1",
         "color": "#FFFFFF"
     },
     {
@@ -48,7 +78,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "0",
+        "pages": "1",
         "color": "#FFFFFF"
     },
     {
@@ -58,7 +88,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "0",
+        "pages": "1",
         "color": "#FFFFFF"
     },
     {
@@ -68,7 +98,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "3",
+        "pages": "4",
         "color": "#000000"
     },
     {
@@ -78,7 +108,7 @@
         "width": 180,
         "height": 21,
         "alignment": "left",
-        "pages": "3",
+        "pages": "4",
         "color": "#000000"
     },
     {
@@ -88,7 +118,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "3",
+        "pages": "4",
         "color": "#000000"
     },
     {
@@ -98,7 +128,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "3",
+        "pages": "4",
         "color": "#000000"
     },
     {
@@ -107,7 +137,7 @@
         "y": 356,
         "width": 200,
         "height": 21,
-        "pages": "3"
+        "pages": "4"
     },
     {
         "text": "chiffre_affaire",
@@ -116,7 +146,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "3",
+        "pages": "4",
         "color": "#000000"
     },
     {
@@ -126,7 +156,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "4",
+        "pages": "5",
         "color": "#000000"
     },
     {
@@ -136,7 +166,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "5",
+        "pages": "6",
         "color": "#000000"
     },
     {
@@ -146,7 +176,7 @@
         "width": 900,
         "height": 200,
         "alignment": "left",
-        "pages": "6",
+        "pages": "7",
         "color": "#000000"
     },
     {
@@ -156,7 +186,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "8",
+        "pages": "9",
         "color": "#000000"
     },
     {
@@ -166,7 +196,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "9",
+        "pages": "10",
         "color": "#000000"
     },
     {
@@ -176,7 +206,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "12",
+        "pages": "13",
         "color": "#000000"
     },
     {
@@ -186,7 +216,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "13",
+        "pages": "14",
         "color": "#000000"
     },
     {
@@ -196,7 +226,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "17",
+        "pages": "18",
         "color": "#000000"
     },
     {
@@ -206,7 +236,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "18",
+        "pages": "19",
         "color": "#000000"
     },
     {
@@ -216,7 +246,7 @@
         "width": 550,
         "height": 550,
         "alignment": "left",
-        "pages": "19",
+        "pages": "20",
         "color": "#000000"
     },
     {
@@ -226,7 +256,7 @@
         "width": 620,
         "height": 450,
         "alignment": "left",
-        "pages": "20",
+        "pages": "21",
         "color": "#000000"
     },
     {
@@ -236,7 +266,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "22",
+        "pages": "23",
         "color": "#000000"
     },
     {
@@ -246,7 +276,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "25",
+        "pages": "26",
         "color": "#000000"
     },
     {
@@ -256,7 +286,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "26",
+        "pages": "27",
         "color": "#000000"
     },
     {
@@ -266,7 +296,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "28",
+        "pages": "29",
         "color": "#000000"
     },
     {
@@ -276,7 +306,7 @@
         "width": 900,
         "height": 600,
         "alignment": "left",
-        "pages": "29",
+        "pages": "30",
         "color": "#000000"
     },
     {
@@ -286,7 +316,7 @@
         "width": 200,
         "height": 25,
         "alignment": "left",
-        "pages": "31",
+        "pages": "32",
         "size": 14,
         "fontBold": true,
         "color": "#000000"
@@ -298,7 +328,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "31",
+        "pages": "32",
         "color": "#000000"
     },
     {
@@ -308,7 +338,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "31",
+        "pages": "32",
         "color": "#000000"
     },
     {
@@ -318,7 +348,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "31",
+        "pages": "32",
         "color": "#000000"
     },
     {
@@ -328,7 +358,7 @@
         "width": 200,
         "height": 21,
         "alignment": "left",
-        "pages": "31",
+        "pages": "32",
         "color": "#000000"
     }
 ]

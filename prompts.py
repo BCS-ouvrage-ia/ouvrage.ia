@@ -3,7 +3,8 @@
 prompts_dossier = {
                 "nom_projet": "Extrait le nom du projet de l'appel d’offre suivant : dossier-consultation.pdf.\nTu renverras uniquement le nom de l'appel d'offre brut.",
                 "infos_dossier_consultation": "Extrait les principales informations du dossier de consultation suivant : dossier-consultation.pdf.\nLes informations à extraire (si présentes) :\n- Nom du client / contractant\n- Secteur d'activité / marché\n- Date limite de dépôt de candidature\n- Date début du chantier\n- Date maximum fin de chantier",
-                "requis_dossier_consultation": "Analyse les exigences principales et secondaires du dossier de consultation suivant : dossier-consultation.pdf. Sois exhaustif."
+                "requis_dossier_consultation": "Analyse les exigences principales et secondaires du dossier de consultation suivant : dossier-consultation.pdf. Sois exhaustif.",
+                "documents_a_fournir": "Extrait sous la forme de bullets points la liste des documents à fournir du dossier de consultation suivant : dossier-consultation.pdf."
             }
 
 prompts = {

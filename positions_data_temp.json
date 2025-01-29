@@ -1,5 +1,35 @@
 [
     {
+        "text": "infos_dossier_consultation",
+        "x": 45,
+        "y": 160,
+        "width": 900,
+        "height": 100,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#000000"
+    },
+    {
+        "text": "requis_dossier_consultation",
+        "x": 45,
+        "y": 300,
+        "width": 900,
+        "height": 250,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#000000"
+    },
+    {
+        "text": "documents_a_fournir",
+        "x": 45,
+        "y": 573,
+        "width": 900,
+        "height": 230,
+        "alignment": "left",
+        "pages": "0",
+        "color": "#000000"
+    },
+    {
         "text": "March\u00e9 de maintenance pr\u00e9ventive et curative des installations de climatisation pour la direction interr\u00e9gionale de l\u2019Insee des Antilles-Guyane du Service Territorial de Guyane",
         "x": 75,
         "y": 220,

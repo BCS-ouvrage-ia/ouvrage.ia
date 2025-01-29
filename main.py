@@ -196,6 +196,7 @@ def process_asset(user_id, file_id):
                 'nom_projet': assistant_responses_dossier.get('nom_projet', ''),
                 'infos_dossier_consultation': assistant_responses_dossier.get('infos_dossier_consultation', ''),
                 'requis_dossier_consultation': assistant_responses_dossier.get('requis_dossier_consultation', ''),
+                'documents_a_fournir': assistant_responses_dossier.get('documents_a_fournir', ''),
                 'nom_entreprise': nom_entreprise
             }
 
@@ -205,11 +206,11 @@ def process_asset(user_id, file_id):
                 response = run_assistant_interaction(ASSISTANT_ID, formatted_prompt, thread_id)
                 assistant_responses[key] = response
 
-                #if key == 'moyens_humains':
-                    #generer_organigramme(response)
+                if key == 'moyens_humains':
+                    generer_organigramme(response)
 
                 # Mise à jour des variables si nécessaire
-                if key in ['nom_projet', 'infos_dossier_consultation', 'requis_dossier_consultation']:
+                if key in ['nom_projet', 'infos_dossier_consultation', 'requis_dossier_consultation', 'documents_a_fournir']:
                     variables[key] = response
 
             # Chemin du template
