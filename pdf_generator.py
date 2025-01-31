@@ -202,8 +202,10 @@ def generate_pdf(template_path, output_path, positions_data, variables, memoire_
                 # Conversion pour alignement vertical sur page A4
                 y = page_height - y
 
+                # Définir line_height en fonction de la page
+                line_height = 10 if page_num == 0 else 20  # 15 pour la première page, 20 pour les autres
+
                 wrapped_text_lines = wrap_text(c, str(cleaned_text), width)
-                line_height = 20
                 if item.get('text') == 'planning':
                     # Gestion multi-pages
                     available_height = height
