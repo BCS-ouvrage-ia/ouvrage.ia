@@ -88,7 +88,8 @@ def worker():
         try:
             with processing_lock:
                 is_processing = True
-            process_asset(user_id, file_id)
+            with app.app_context():  # Assure le contexte de l'application
+                process_asset(user_id, file_id)
         except Exception as e:
             logging.error(f"Erreur dans le worker: {str(e)}")
         finally:
@@ -101,68 +102,77 @@ worker_thread = threading.Thread(target=worker, daemon=True)
 worker_thread.start()
 
 def process_asset(user_id, file_id):
-
-    # Récupère les données de l'utilisateur depuis Webflow
-    user_data = get_user_data_from_webflow(user_id)
-
-    if not user_data:
-        raise ValueError('Données utilisateur introuvables')
-
-    # Extraction des informations de l'utilisateur
-    user_info = user_data
-    field_data = user_info.get('fieldData', {})
-
-    nom_entreprise = field_data.get('nom-entreprise')
-    prenom = field_data.get('prenom')
-    nom = field_data.get('nom')
-    asset_id = field_data.get('memoire-technique-3')
-
-    if not all([nom_entreprise, prenom, nom]):
-        raise ValueError('Données utilisateur incomplètes')
+    consultation_file_id = None
+    memoire_file_id = None
     
-    # Crée le nom de fichier selon la convention
-    filename = f"{prenom}-{nom}-{nom_entreprise}-dossier-consultation.pdf"
-    filename = secure_filename(filename)
+    try:
+        # Récupère les données de l'utilisateur depuis Webflow
+        user_data = get_user_data_from_webflow(user_id)
 
-    # Enregistre le fichier dans le dossier spécifié
-    file_path = os.path.join(CONSULT_FOLDER, filename)
-    download_from_asset_id(file_id, file_path)
+        if not user_data:
+            raise ValueError('Données utilisateur introuvables')
 
-    # Envoyer dossier consultation dans Webflow
-    webflow_url = f"https://api.webflow.com/v2/collections/{DOSSIER_CONSULTATION_COLLECTION_ID}/items/live"
-    headers = {
-        "Authorization": f"Bearer {WEBFLOW_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "fieldData": {
-            "user-id": user_id,
-            "asset-id": file_id,
-            "name": filename,
-            "slug": generate_slug(filename)
+        # Extraction des informations de l'utilisateur
+        user_info = user_data
+        field_data = user_info.get('fieldData', {})
+
+        nom_entreprise = field_data.get('nom-entreprise')
+        prenom = field_data.get('prenom')
+        nom = field_data.get('nom')
+        asset_id = field_data.get('memoire-technique-3')
+
+        if not all([nom_entreprise, prenom, nom]):
+            raise ValueError('Données utilisateur incomplètes')
+        
+        # Crée le nom de fichier selon la convention
+        filename = f"{prenom}-{nom}-{nom_entreprise}-dossier-consultation.pdf"
+        filename = secure_filename(filename)
+
+        # Assure que les dossiers existent
+        os.makedirs(CONSULT_FOLDER, exist_ok=True)
+        os.makedirs(MEMOIRES_FOLDER, exist_ok=True)
+
+        # Enregistre le fichier dans le dossier spécifié
+        file_path = os.path.join(CONSULT_FOLDER, filename)
+        download_from_asset_id(file_id, file_path)
+
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f'Le fichier de consultation n\'a pas pu être téléchargé: {file_path}')
+
+        # Envoyer dossier consultation dans Webflow
+        webflow_url = f"https://api.webflow.com/v2/collections/{DOSSIER_CONSULTATION_COLLECTION_ID}/items/live"
+        headers = {
+            "Authorization": f"Bearer {WEBFLOW_API_TOKEN}",
+            "Content-Type": "application/json"
         }
-    }
+        data = {
+            "fieldData": {
+                "user-id": user_id,
+                "asset-id": file_id,
+                "name": filename,
+                "slug": generate_slug(filename)
+            }
+        }
 
-    try:
-        response = requests.post(webflow_url, headers=headers, json=data)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        raise ValueError(f'Erreur lors de l\'envoi du dossier de consultation à l\'API Webflow: {str(e)}')
+        try:
+            response = requests.post(webflow_url, headers=headers, json=data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise ValueError(f'Erreur lors de l\'envoi du dossier de consultation à l\'API Webflow: {str(e)}')
 
-    # Chemin du fichier memoire technique
-    memoire_filename = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique.pdf"
-    memoire_file_path = os.path.join(MEMOIRES_FOLDER, memoire_filename)
+        # Chemin du fichier memoire technique
+        memoire_filename = f"{prenom}-{nom}-{nom_entreprise}-memoire-technique.pdf"
+        memoire_file_path = os.path.join(MEMOIRES_FOLDER, memoire_filename)
 
-    # test asset_id
-    # asset_id = "80f58944-8cd0-447d-b324-24b310bf99ae"
+        # test asset_id
+        # asset_id = "80f58944-8cd0-447d-b324-24b310bf99ae"
 
-    # Enregistrer memoire technique
-    download_from_asset_id(asset_id, memoire_file_path)
+        # Enregistrer memoire technique
+        download_from_asset_id(asset_id, memoire_file_path)
 
-    if not os.path.exists(memoire_file_path):
-        raise FileNotFoundError(f'Le fichier memoire technique associé est introuvable: {memoire_file_path}')
+        if not os.path.exists(memoire_file_path):
+            raise FileNotFoundError(f'Le fichier memoire technique associé est introuvable: {memoire_file_path}')
 
-    try:
         # Upload du fichier dossier de consultation à OpenAI
         consultation_file_id = upload_file_to_openai(file_path, 'dossier-consultation.pdf', purpose='assistants')
         logging.info(f"consultation_file_id obtenu : {consultation_file_id}")
@@ -284,33 +294,53 @@ def process_asset(user_id, file_id):
             json.dump(positions_data_temp, f, indent=4)
 
         # Génération du PDF final
-        generate_pdf(template_path, output_pdf_path, positions_data_temp, variables, memoire_file_path)
+        try:
+            generate_pdf(template_path, output_pdf_path, positions_data_temp, variables, memoire_file_path)
+            if not os.path.exists(output_pdf_path):
+                raise FileNotFoundError("Le PDF final n'a pas été généré")
+        except Exception as e:
+            raise Exception(f"Erreur lors de la génération du PDF: {str(e)}")
 
+        # Envoi du PDF
         try:
             pdf_sent = send_pdf_file(output_pdf_path, user_id)
             if not pdf_sent:
-                raise ValueError("Échec de l'envoi du fichier PDF. Consultez les logs pour plus de détails.")
+                raise Exception("Échec de l'envoi du fichier PDF")
+            logging.info(f"PDF envoyé avec succès pour l'utilisateur {user_id}")
         except Exception as e:
-            raise ValueError(f"Erreur critique dans le script principal: {str(e)}")
-        
-        delete_file_in_openai(consultation_file_id)
-        delete_file_in_openai(memoire_file_id)
-        reset_file(THREAD_ID_FILE)
-        reset_file(THREAD_ID_ANALYSE_DOSSIER_FILE)
-        supprimer_images('images-memoire-technique-temp')
+            raise Exception(f"Erreur lors de l'envoi du PDF: {str(e)}")
 
-        return jsonify({
+        return {
             "status": "success",
             "message": "Le mémoire technique a été généré avec succès.",
             "file_path": output_pdf_path
-        })
-    except FileNotFoundError as e:
-        raise FileNotFoundError(f'Fichier non trouvé: {str(e)}')
+        }
     except Exception as e:
         logging.error(f"Erreur dans process_asset: {str(e)}")
-        raise  # Re-raise the exception to be caught by the worker
+        raise
+    finally:
+        # Nettoyage des fichiers OpenAI
+        try:
+            if consultation_file_id:
+                delete_file_in_openai(consultation_file_id)
+                logging.info(f"Fichier consultation {consultation_file_id} supprimé avec succès")
+        except Exception as e:
+            logging.error(f"Erreur lors de la suppression du fichier consultation {consultation_file_id}: {e}")
 
+        try:
+            if memoire_file_id:
+                delete_file_in_openai(memoire_file_id)
+                logging.info(f"Fichier mémoire {memoire_file_id} supprimé avec succès")
+        except Exception as e:
+            logging.error(f"Erreur lors de la suppression du fichier mémoire {memoire_file_id}: {e}")
 
+        # Nettoyage des fichiers thread_id et images temporaires
+        try:
+            reset_file(THREAD_ID_FILE)
+            reset_file(THREAD_ID_ANALYSE_DOSSIER_FILE)
+            supprimer_images('images-memoire-technique-temp')
+        except Exception as e:
+            logging.error(f"Erreur lors du nettoyage final: {e}")
 
 @app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
