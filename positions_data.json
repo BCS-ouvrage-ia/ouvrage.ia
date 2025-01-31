@@ -7,17 +7,19 @@
         "height": 100,
         "alignment": "left",
         "pages": "0",
-        "color": "#000000"
+        "color": "#000000",
+        "size": 6
     },
     {
         "text": "requis_dossier_consultation",
         "x": 45,
         "y": 300,
-        "width": 900,
+        "width": 880,
         "height": 250,
         "alignment": "left",
         "pages": "0",
-        "color": "#000000"
+        "color": "#000000",
+        "size": 6
     },
     {
         "text": "documents_a_fournir",
@@ -27,7 +29,8 @@
         "height": 230,
         "alignment": "left",
         "pages": "0",
-        "color": "#000000"
+        "color": "#000000",
+        "size": 6
     },
     {
         "text": "nom_projet",
