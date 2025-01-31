@@ -5,6 +5,7 @@ import openai
 import json
 import requests
 import threading
+from queue import Queue
 # Si local
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
@@ -69,6 +70,35 @@ BEARER_TOKEN = "61735865-8b6d-4cf4-8ceb-cb4a3901c357"
 DOSSIER_CONSULTATION_COLLECTION_ID = os.getenv("DOSSIER_CONSULTATION_COLLECTION_ID")
 WEBFLOW_API_TOKEN = os.getenv("WEBFLOW_API_TOKEN")
 
+# Créer une queue globale et un verrou
+task_queue = Queue()
+processing_lock = threading.Lock()
+is_processing = False
+
+def worker():
+    """Worker qui traite les tâches de la queue en série"""
+    global is_processing
+    while True:
+        # Attendre une nouvelle tâche
+        task = task_queue.get()
+        if task is None:
+            break
+        
+        user_id, file_id = task
+        try:
+            with processing_lock:
+                is_processing = True
+            process_asset(user_id, file_id)
+        except Exception as e:
+            logging.error(f"Erreur dans le worker: {str(e)}")
+        finally:
+            with processing_lock:
+                is_processing = False
+            task_queue.task_done()
+
+# Démarrer le worker dans un thread séparé
+worker_thread = threading.Thread(target=worker, daemon=True)
+worker_thread.start()
 
 def process_asset(user_id, file_id):
 
@@ -289,30 +319,51 @@ def process_asset(user_id, file_id):
 
 @app.route('/webhook/generer_memoire_technique', methods=['POST'])
 def generer_memoire_technique():
-    
-       # Vérifie le token Bearer dans l'en-tête Authorization
+    # Vérifie le token Bearer dans l'en-tête Authorization
     auth_header = request.headers.get('Authorization')
     if not auth_header or auth_header.split()[0] != 'Bearer' or auth_header.split()[1] != BEARER_TOKEN:
         return jsonify({'status': 'error', 'message': 'Token Bearer invalide ou manquant'}), 403
 
     # Récupère le User ID depuis la requête
     user_id = request.json.get('user_id')
-
     if not user_id:
         return jsonify({'status': 'error', 'message': 'User ID manquant'}), 400
 
     file_id = request.json.get('asset_id')
-
     if not file_id:
         return jsonify({'status': 'error', 'message': 'Asset ID manquant'}), 400
 
-    # Réponse immédiate au client
-    response = jsonify({'status': 'success', 'message': 'Asset ID reçu', 'asset_id': file_id})
+    # Ajouter la tâche à la queue
+    task_queue.put((user_id, file_id))
     
-    # Exécuter le traitement en arrière-plan
-    threading.Thread(target=process_asset, args=(user_id, file_id)).start()
+    # Vérifier si une tâche est en cours de traitement
+    with processing_lock:
+        currently_processing = is_processing
 
-    return response, 200
+    # Préparer le message de réponse
+    status_message = "Tâche ajoutée à la file d'attente. "
+    if currently_processing:
+        status_message += "Une autre tâche est en cours de traitement. Votre demande sera traitée dès que possible."
+    else:
+        status_message += "Le traitement va commencer immédiatement."
+
+    return jsonify({
+        'status': 'success',
+        'message': status_message,
+        'asset_id': file_id,
+        'queue_size': task_queue.qsize()
+    }), 200
+
+# Ajouter une route pour vérifier le statut de la queue
+@app.route('/status', methods=['GET'])
+def get_status():
+    with processing_lock:
+        currently_processing = is_processing
+    
+    return jsonify({
+        'is_processing': currently_processing,
+        'queue_size': task_queue.qsize()
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
