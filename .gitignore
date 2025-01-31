@@ -7,3 +7,4 @@ __pycache__/
 test-openai-file.py
 template_memoire_technique(old).pdf
 test_generate_pdf.py
+test_output.pdf
