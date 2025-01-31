@@ -126,7 +126,8 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
             for part in content_parts:
                 if part.type == 'text':
                     text_value = part.text.value
-                    pattern = r'【\d+†source】'
+                    # Pattern mis à jour pour capturer les deux formats de références
+                    pattern = r'[【■]\d+[:†][^\]】■]*[\]】■]'
                     text_value = re.sub(pattern, '', text_value)
                     assistant_response += text_value
             break
