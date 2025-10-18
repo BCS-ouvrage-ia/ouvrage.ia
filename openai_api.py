@@ -74,6 +74,22 @@ def add_file_to_vector_store(vector_store_id, file_id):
     )
     return response
 
+def remove_file_from_vector_store(vector_store_id, file_id):
+    """
+    Retire un fichier spécifique d'un vector store
+    """
+    try:
+        response = client.vector_stores.files.delete(
+            vector_store_id=vector_store_id,
+            file_id=file_id
+        )
+        print(f"Fichier {file_id} retiré du vector store {vector_store_id}")
+        return response
+    except Exception as e:
+        print(f"Erreur lors du retrait du fichier {file_id} du vector store {vector_store_id}: {e}")
+        return None
+
+
 def create_thread():
     response = client.beta.threads.create()
     return response.id
