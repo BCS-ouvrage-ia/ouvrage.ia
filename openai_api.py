@@ -12,6 +12,7 @@ import re
 load_dotenv()
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
+client = OpenAI()
 
 # Modèle Pydantic pour représenter une personne avec son nom et poste
 class PersonExtraction(BaseModel):
@@ -29,7 +30,7 @@ def wait_for_file_upload(file_id, max_retries=30, delay=2):
     """
     for _ in range(max_retries):
         try:
-            file_info = openai.files.retrieve(file_id)
+            file_info = client.files.retrieve(file_id)
             # S'il n'y a pas d'erreur, le fichier est accessible
             return True
         except Exception as e:
@@ -46,7 +47,7 @@ def upload_file_to_openai(file_path, file_path_openai, purpose='assistants'):
     try:
         # Envoyer le fichier renommé à OpenAI
         with open(file_path_openai, 'rb') as f:
-            response = openai.files.create(
+            response = client.files.create(
                 file=f,
                 purpose=purpose
             )
@@ -67,27 +68,27 @@ def upload_file_to_openai(file_path, file_path_openai, purpose='assistants'):
 
 
 def add_file_to_vector_store(vector_store_id, file_id):
-    response = openai.beta.vector_stores.files.create(
+    response = client.vector_stores.files.create(  # ← SANS .beta !
         vector_store_id=vector_store_id,
         file_id=file_id
     )
     return response
 
 def create_thread():
-    response = openai.beta.threads.create()
+    response = client.beta.threads.create()
     return response.id
 
 
 def run_assistant_interaction(assistant_id, message_content, thread_id):
     # Créer un message dans le thread existant
-    thread_message = openai.beta.threads.messages.create(
+    thread_message = client.beta.threads.messages.create(
         thread_id,
         role="user",
         content=message_content,
     )
 
     # Créer un run
-    run = openai.beta.threads.runs.create(
+    run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id
     )
@@ -97,7 +98,7 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
 
     # Récupérer le run jusqu'à ce que le statut soit "completed"
     while True:
-        run_info = openai.beta.threads.runs.retrieve(
+        run_info = client.beta.threads.runs.retrieve(
             thread_id=thread_id,
             run_id=run_id
         )
@@ -112,7 +113,7 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
     print("etape post retrieve run")
 
     # Extraire la réponse de l'assistant
-    thread_messages = openai.beta.threads.messages.list(thread_id)
+    thread_messages = client.beta.threads.messages.list(thread_id)
     messages = thread_messages.data
     assistant_response = ''
 
@@ -136,7 +137,7 @@ def run_assistant_interaction(assistant_id, message_content, thread_id):
 
 
 def delete_file_in_openai(file_id):
-    response = openai.files.delete(
+    response = client.files.delete(
         file_id = file_id
     )
 
@@ -144,7 +145,7 @@ def delete_file_in_openai(file_id):
 
 
 def create_and_run_thread(assistant_id, messages):
-    response = openai.beta.threads.create_and_run(
+    response = client.beta.threads.create_and_run(
         assistant_id=assistant_id,
         thread={
             "messages": messages
@@ -156,7 +157,7 @@ def create_and_run_thread(assistant_id, messages):
 
 
 def retrieve_run(thread_id, run_id):
-    response = openai.beta.threads.runs.retrieve(
+    response = client.beta.threads.runs.retrieve(
         thread_id=thread_id,
         run_id=run_id
     )
@@ -175,7 +176,7 @@ def extract_team_from_text(text: str) -> List[dict]:
     """
     try:
         # Message à envoyer au modèle GPT pour extraction structurée
-        completion = openai.beta.chat.completions.parse(
+        completion = client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an expert at structured data extraction. You will be given unstructured text about people and their roles in a company, and you should convert it into a structured JSON format like [{ \"nom\": \"nom1\", \"poste\": \"poste1\" }, { \"nom\": \"nom2\", \"poste\": \"poste2\" }, ...]."},
