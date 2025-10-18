@@ -23,6 +23,7 @@ from openai_api import (
     run_assistant_interaction,
     create_thread,
     delete_file_in_openai,
+    remove_file_from_vector_store,
 )
 from prompts import prompts, prompts_dossier
 from download_file import download_from_asset_id
