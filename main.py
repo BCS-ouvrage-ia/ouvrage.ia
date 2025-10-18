@@ -262,7 +262,7 @@ def process_asset(user_id, file_id):
         # Préparer les informations supplémentaires pour le PDF
         variables.update({
             'adresse': field_data.get('adresse', 'Adresse de l\'entreprise'),
-            'numero_siren': field_data.get('numero_siren', 'Numéro de SIREN'),
+            'numero_siren': field_data.get('numero-siren', 'Numéro de SIREN'),
             'chiffre_affaire': field_data.get('chiffre-affaire', 'Chiffre d\'affaires'),
             'code postal': field_data.get('code-postal', 'XXXXX'),
             'ville': field_data.get('ville', 'VILLE'),
