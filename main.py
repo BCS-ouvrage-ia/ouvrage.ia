@@ -105,6 +105,7 @@ worker_thread.start()
 def process_asset(user_id, file_id):
     consultation_file_id = None
     memoire_file_id = None
+    vector_store_files = []
     
     try:
         # Récupère les données de l'utilisateur depuis Webflow
@@ -190,18 +191,21 @@ def process_asset(user_id, file_id):
         """
         try:
             response1 = add_file_to_vector_store(VECTOR_STORE_ID_ANALYSE_DOSSIER, consultation_file_id)
+            vector_store_files.append((VECTOR_STORE_ID_ANALYSE_DOSSIER, consultation_file_id))
             logging.info(f"Ajout consultation_file_id au VECTOR_STORE_ID_ANALYSE_DOSSIER réussi : {response1}")
         except Exception as e:
             logging.error(f"Erreur lors de l'ajout de consultation_file_id au VECTOR_STORE_ID_ANALYSE_DOSSIER : {e}")
 
         try:
             response2 = add_file_to_vector_store(VECTOR_STORE_ID, consultation_file_id)
+            vector_store_files.append((VECTOR_STORE_ID, consultation_file_id))
             logging.info(f"Ajout consultation_file_id au VECTOR_STORE_ID réussi : {response2}")
         except Exception as e:
             logging.error(f"Erreur lors de l'ajout de consultation_file_id au VECTOR_STORE_ID : {e}")
 
         try:
             response3 = add_file_to_vector_store(VECTOR_STORE_ID, memoire_file_id)
+            vector_store_files.append((VECTOR_STORE_ID, memoire_file_id))
             logging.info(f"Ajout memoire_file_id au VECTOR_STORE_ID réussi : {response3}")
         except Exception as e:
             logging.error(f"Erreur lors de l'ajout de memoire_file_id au VECTOR_STORE_ID : {e}")
@@ -320,7 +324,17 @@ def process_asset(user_id, file_id):
         logging.error(f"Erreur dans process_asset: {str(e)}")
         raise
     finally:
-        # Nettoyage des fichiers OpenAI
+        # ========== NOUVEAU CODE À AJOUTER ICI ========== 
+        # Retirer les fichiers des vector stores
+        for vs_id, f_id in vector_store_files:
+            try:
+                remove_file_from_vector_store(vs_id, f_id)
+                logging.info(f"Fichier {f_id} retiré du vector store {vs_id}")
+            except Exception as e:
+                logging.error(f"Erreur lors du retrait du fichier {f_id}: {e}")
+        # ========== FIN DU NOUVEAU CODE ========== 
+        
+        # Nettoyage des fichiers OpenAI (CODE EXISTANT - NE PAS TOUCHER)
         try:
             if consultation_file_id:
                 delete_file_in_openai(consultation_file_id)
